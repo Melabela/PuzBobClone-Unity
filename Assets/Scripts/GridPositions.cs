@@ -1,6 +1,6 @@
+using System;  // for Math
 using System.Collections;
 using System.Collections.Generic;
-using System;
 using UnityEngine;
 
 /****
@@ -14,14 +14,14 @@ using UnityEngine;
  * Notes
  * - So even rows (y), will use even horiz positions (x)
  ****/
- 
+
 public class GridPositions : MonoBehaviour
 {
-    public int GRID_ROWS;
-    public int GRID_COLS;
-    public float GRID_UNIT_SIZE;  // diameter
-    public float Z_COORD = 0.0f;  // set constant
-    public GameObject ballPrefab;
+    [SerializeField] int GRID_ROWS;
+    [SerializeField] int GRID_COLS;
+    [SerializeField] float GRID_UNIT_SIZE;  // diameter
+    [SerializeField] float Z_COORD = 0.0f;  // set constant
+    [SerializeField] GameObject ballPrefab;
 
     private float half_unit;    // radius
     private float height_unit;  // "orange stacking" rows
@@ -36,10 +36,9 @@ public class GridPositions : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
     }
 
-    private void GridInit()
+    void GridInit()
     {
         half_unit = GRID_UNIT_SIZE / 2.0f;
 
@@ -51,7 +50,7 @@ public class GridPositions : MonoBehaviour
             );
     }
 
-    private Vector3 GetCenterCoordForPosition(Vector2Int pos)
+    public Vector3 GetCenterCoordForPosition(Vector2Int pos)
     {
         // X-coord:
         // - odd rows
@@ -73,13 +72,14 @@ public class GridPositions : MonoBehaviour
         return coords;
     }
 
-    private Vector2Int GetClosestPositionForCenterCoord(Vector3 coord)
+    public Vector2Int GetClosestPositionForCenterCoord(Vector3 coord)
     {
         // ignore Z-coord.
 
         // reverse above calculations
         float pX = (coord.x / half_unit) - 1;
         float pY = (coord.y - half_unit) / height_unit;
+        // Debug.Log($"half_unit={half_unit}, height_unit={height_unit}");
 
         // round to nearest integer position
         int ipY = (int)Math.Round(pY);
@@ -107,7 +107,7 @@ public class GridPositions : MonoBehaviour
         return pos;
     }
 
-    private void FillGridWithBalls()
+    void FillGridWithBalls()
     {
         for (int y = 0; y < GRID_ROWS; y++)
         {
@@ -131,9 +131,8 @@ public class GridPositions : MonoBehaviour
 
                 UnityEngine.Object newBall = Instantiate(ballPrefab, ballCoords,
                                                 ballPrefab.transform.rotation);
-                newBall.name += $"_{realXPos}_{y}";  // append (x,y) pos to name for identification
+                newBall.name += $"_{realXPos},{y}";  // append (x,y) pos to name for identification
             }
         }
     }
-
 }

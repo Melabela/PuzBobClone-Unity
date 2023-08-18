@@ -673,6 +673,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ffbb6fe328df44788a8d4a1289d9022d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gridGameObj: {fileID: 248318740}
   SPEED_MULT: 6
   DIAMETER: 1
   X_MIN: 0
