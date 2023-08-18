@@ -11,9 +11,15 @@ public class BallInfo : MonoBehaviour
     void Start()
     {
         // prototype - set as random color
-        float r = Random.Range(0.0f, 1.0f);
-        float g = Random.Range(0.0f, 1.0f);
-        float b = Random.Range(0.0f, 1.0f);
+        // float r = Random.Range(0.0f, 1.0f);
+        // float g = Random.Range(0.0f, 1.0f);
+        // float b = Random.Range(0.0f, 1.0f);
+        // color = new Color(r, g, b);
+
+        // init - set as light grey
+        float r = 0.8f;
+        float g = 0.8f;
+        float b = 0.8f;
         color = new Color(r, g, b);
 
         // update color
