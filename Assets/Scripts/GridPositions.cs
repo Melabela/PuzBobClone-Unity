@@ -30,7 +30,7 @@ public class GridPositions : MonoBehaviour
     void Start()
     {
         GridInit();
-        FillGridWithBalls();
+        // FillGridWithBalls();
     }
 
     // Update is called once per frame
