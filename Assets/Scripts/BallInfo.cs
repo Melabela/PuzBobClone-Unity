@@ -28,14 +28,25 @@ public class BallInfo : MonoBehaviour
         ["purple"] = "Materials/BallPurple"
     };
 
+    // other object references
+    GameObject ballDropperObj;
+    // GameObject gridObj;
+
+    // internal vars / state
     int my_id;
+    bool bDetectCollision;
 
     // Start is called before the first frame update
     void Start()
     {
+        ballDropperObj = GameObject.Find("BallDropper");
+        // gridObj = GameObject.Find("Grid");
+
         my_id = Random.Range(BALL_MIN_ID, BALL_MAX_ID + 1);
         // Debug.Log($"BallInfo.Start() - my_id={my_id}");
         UpdateColor();
+
+        bDetectCollision = true;
     }
 
     // Update is called once per frame
@@ -58,4 +69,21 @@ public class BallInfo : MonoBehaviour
         }
     }
 
+    void OnCollisionEnter(Collision collision)
+    {
+        if (bDetectCollision) {
+            Debug.Log("ENTER BallInfo.OnCollisionEnter");
+
+            // ONLY process FIRST collision, for now
+            bDetectCollision = false;
+
+            // stop movement & forces
+            Rigidbody ballRb = GetComponent<Rigidbody>();
+            ballRb.velocity = Vector3.zero;
+
+            // notify dropper
+            BallDropper ballDropperScript = ballDropperObj.GetComponent<BallDropper>();
+            ballDropperScript.BallDropDone();
+        }
+    }
 }

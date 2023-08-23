@@ -40,8 +40,9 @@ public class BallDropper : MonoBehaviour
 
     // called from outside.  let's us know previous ball dropped
     //  has settled, and we can create another in the dropper
-    public void BallDropOver()
+    public void BallDropDone()
     {
+        // Debug.Log("ENTER BallDropper.BallDropDone");
         if (isBallDropped) {
             isBallDropped = false;
         }
