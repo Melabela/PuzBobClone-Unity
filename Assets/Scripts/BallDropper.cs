@@ -98,23 +98,20 @@ public class BallDropper : MonoBehaviour
 
     void GenerateBall()
     {
-        Debug.Log("ENTER BallDropper.GenerateBall()");
+        // Debug.Log("ENTER BallDropper.GenerateBall()");
         var newBall = Instantiate(ballPrefab,
                         this.transform.position,
                         ballPrefab.transform.rotation).gameObject;
         ballIndex += 1;
         newBall.name += $"_{ballIndex}";  // append index to ball name for identification
         ballBeingHeld = newBall;
-
-        BallInfo newBallScript = newBall.GetComponent<BallInfo>();
-        int newBallId = Random.Range(BallInfo.BALL_MIN_ID, BallInfo.BALL_MAX_ID + 1);
-        newBallScript.SetId(newBallId);
     }
 
     void DropBall()
     {
-        Debug.Log("ENTER BallDropper.DropBall()");
+        // Debug.Log("ENTER BallDropper.DropBall()");
         Rigidbody ballHeldRb = ballBeingHeld.GetComponent<Rigidbody>();
+        ballHeldRb.velocity = Vector3.zero;  // clear first
         ballHeldRb.AddForce(Vector3.down * Ball_Drop_Force, ForceMode.Acceleration);
     }
 }

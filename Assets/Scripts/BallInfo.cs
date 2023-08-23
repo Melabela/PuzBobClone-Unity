@@ -4,42 +4,37 @@ using UnityEngine;
 
 public class BallInfo : MonoBehaviour
 {
-    static public int BALL_MIN_ID = 1;  // inclusive
-    static public int BALL_MAX_ID = 6;  // inclusive
+    static int BALL_MIN_ID = 1;  // inclusive
+    static int BALL_MAX_ID = 6;  // inclusive
 
-    Dictionary<int, string> ballIdToColorName = new Dictionary<int, string>()
+    static List<string> ballIndexToColorName = new List<string>()
     {
-        [1] = "red",
-        [2] = "orange",
-        [3] = "yellow",
-        [4] = "green",
-        [5] = "blue",  
-        [6] = "purple"
+        "",       // [0]
+        "red",    // [1]
+        "orange", // [2]
+        "yellow", // [3]
+        "green",  // [4]
+        "blue",   // [5]
+        "purple"  // [6]
     };
 
-    Dictionary<string, Color> ballColorNameToColor = new Dictionary<string, Color>()
+    static Dictionary<string, string> ballColorNameToMaterialName = new Dictionary<string, string>()
     {
-        ["red"]    = new Color(220, 10, 10),
-        ["orange"] = new Color(230, 100, 0),
-        ["yellow"] = new Color(240, 240, 100),
-        ["green"]  = new Color(0, 200, 0),
-        ["blue"]   = new Color(40, 40, 230),
-        ["purple"] = new Color(100, 0, 220)
+        ["red"]    = "Materials/BallRed",
+        ["orange"] = "Materials/BallOrange",
+        ["yellow"] = "Materials/BallYellow",
+        ["green"]  = "Materials/BallGreen",
+        ["blue"]   = "Materials/BallBlue",
+        ["purple"] = "Materials/BallPurple"
     };
 
     int my_id;
 
-    public void SetId(int id)
-    {
-        Debug.Log($"BallInfo.SetId({id})");
-        my_id = id;
-        UpdateColor();
-    }
-
     // Start is called before the first frame update
     void Start()
     {
-        my_id = 0;
+        my_id = Random.Range(BALL_MIN_ID, BALL_MAX_ID + 1);
+        // Debug.Log($"BallInfo.Start() - my_id={my_id}");
         UpdateColor();
     }
 
@@ -53,22 +48,14 @@ public class BallInfo : MonoBehaviour
         if ((my_id >= BALL_MIN_ID) && (my_id <= BALL_MAX_ID))
         {
             // active state
-            var color_name = ballIdToColorName[my_id];
-            var color = ballColorNameToColor[color_name];
-            SetMaterialColor(color);
-        }
-        else
-        {
-            // init state
-        }
+            var color_name = ballIndexToColorName[my_id];
+            var material_name = ballColorNameToMaterialName[color_name];
+            var color_material = Resources.Load<Material>(material_name);
 
-    }
-
-    void SetMaterialColor(Color color)
-    {
-        // update color
-        Material m_material = GetComponent<Renderer>().material;
-        m_material.color = color;
+            // update material
+            Renderer ballRenderer = GetComponent<Renderer>();
+            ballRenderer.material = color_material;
+        }
     }
 
 }

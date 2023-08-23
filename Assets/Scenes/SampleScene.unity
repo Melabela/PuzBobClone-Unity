@@ -885,6 +885,7 @@ MonoBehaviour:
   HORIZ_SPEED_MULT: 6
   X_MIN: 0.5
   X_MAX: 7.5
+  Ball_Drop_Force: 6
 --- !u!1 &2136311622
 GameObject:
   m_ObjectHideFlags: 0
