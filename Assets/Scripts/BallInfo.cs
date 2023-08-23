@@ -47,6 +47,7 @@ public class BallInfo : MonoBehaviour
         UpdateColor();
 
         bDetectCollision = true;
+        this.tag = "ActiveBall";
     }
 
     // Update is called once per frame
@@ -71,15 +72,24 @@ public class BallInfo : MonoBehaviour
 
     void OnCollisionEnter(Collision collision)
     {
-        if (bDetectCollision) {
-            Debug.Log("ENTER BallInfo.OnCollisionEnter");
+        // if not detecting, return early
+        if (!bDetectCollision) {
+            return;
+        }
 
-            // ONLY process FIRST collision, for now
+        string otherObjTag = collision.gameObject.tag;
+        Debug.Log($"ENTER BallInfo.OnCollisionEnter() - bDetectCollision={bDetectCollision}, otherObjTag={otherObjTag}");
+
+        // only stop on contact w/ objects of these two types
+        if ( (otherObjTag == "BottomWall") || (otherObjTag == "PlayedBall") ) {
             bDetectCollision = false;
 
             // stop movement & forces
             Rigidbody ballRb = GetComponent<Rigidbody>();
             ballRb.velocity = Vector3.zero;
+
+            // update tag, to become detector to future ball drops
+            this.tag = "PlayedBall";
 
             // notify dropper
             BallDropper ballDropperScript = ballDropperObj.GetComponent<BallDropper>();
