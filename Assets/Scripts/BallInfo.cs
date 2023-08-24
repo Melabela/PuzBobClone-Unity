@@ -114,6 +114,7 @@ public class BallInfo : MonoBehaviour
             tag = "PlayedBall";
             // stop movement & forces
             myRb.velocity = Vector3.zero;
+            myRb.constraints |= RigidbodyConstraints.FreezePosition;
 
             // notify dropper
             BallShooter ballShooterScript = ballShooterObj.GetComponent<BallShooter>();
