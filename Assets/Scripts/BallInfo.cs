@@ -29,7 +29,7 @@ public class BallInfo : MonoBehaviour
     };
 
     // other object references
-    GameObject ballDropperObj;
+    GameObject ballShooterObj;
     // GameObject gridObj;
 
     // internal vars / state
@@ -39,7 +39,7 @@ public class BallInfo : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        ballDropperObj = GameObject.Find("BallDropper");
+        ballShooterObj = GameObject.Find("BallShooter");
         // gridObj = GameObject.Find("Grid");
 
         my_id = Random.Range(BALL_MIN_ID, BALL_MAX_ID + 1);
@@ -47,7 +47,7 @@ public class BallInfo : MonoBehaviour
         UpdateColor();
 
         bDetectCollision = true;
-        this.tag = "ActiveBall";
+        tag = "ActiveBall";
     }
 
     // Update is called once per frame
@@ -89,11 +89,11 @@ public class BallInfo : MonoBehaviour
             ballRb.velocity = Vector3.zero;
 
             // update tag, to become detector to future ball drops
-            this.tag = "PlayedBall";
+            tag = "PlayedBall";
 
             // notify dropper
-            BallDropper ballDropperScript = ballDropperObj.GetComponent<BallDropper>();
-            ballDropperScript.BallDropDone();
+            BallShooter ballShooterScript = ballShooterObj.GetComponent<BallShooter>();
+            ballShooterScript.BallDropDone();
         }
     }
 }

@@ -2,17 +2,23 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BallDropper : MonoBehaviour
+public class BallShooter : MonoBehaviour
 {
     [SerializeField] GameObject ballPrefab;
 
-    [SerializeField] float HORIZ_SPEED_MULT = 6.0f;
+    // [SerializeField] float HORIZ_SPEED_MULT = 6.0f;
 
     // bounds, based on center coords
-    [SerializeField] float X_MIN = 0 + 0.5f;
-    [SerializeField] float X_MAX = 8 - 0.5f;
+    // [SerializeField] float X_MIN = 0 + 0.5f;
+    // [SerializeField] float X_MAX = 8 - 0.5f;
 
-    [SerializeField] float Ball_Drop_Force = 6.0f;
+
+    // rotation bound
+    [SerializeField] float ROTATION_SPEED_MULT = 60.0f;
+    [SerializeField] float Z_ROT_MIN = -86;
+    [SerializeField] float Z_ROT_MAX = +86;
+
+    [SerializeField] float BallDropForce = 6.0f;
 
     // local state
     bool isHoldingBall;  // dropper has ball attached
@@ -34,7 +40,7 @@ public class BallDropper : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        MoveSelfHoriz();
+        RotateSelf();
         CheckForDrop();
     }
 
@@ -48,26 +54,39 @@ public class BallDropper : MonoBehaviour
         }
     }
 
-    void MoveSelfHoriz()
+    void RotateSelf()
     {
         float horizontalInput = Input.GetAxis("Horizontal");
         if (horizontalInput != 0) {
-            float newX = transform.position.x
-                         + (horizontalInput * Time.deltaTime * HORIZ_SPEED_MULT);
+            float rotAmountZ = horizontalInput * Time.deltaTime * ROTATION_SPEED_MULT;
+            transform.Rotate(0, 0, rotAmountZ);
+
+            float myRotZ = transform.eulerAngles.z;
+            // angles are read out as [0.0, 360.0)
+            // need adjust high numbers, to continue w/ negative value calc
+            if (myRotZ >= 180) {
+                myRotZ -= 360;
+            }
+            // Debug.Log($"BallShooter.RotateSelf() - myRotZ={myRotZ}");
+
             // keep in bounds
-            if (newX < X_MIN) {
-                newX = X_MIN;
+            if (myRotZ < Z_ROT_MIN) {
+                // E.G. above values = -89 & -86
+                // WANT:  rotate +3 (+ -89) -> -86
+                // do a reverse rotation to keep at MIN
+                transform.Rotate(0, 0, -(myRotZ - Z_ROT_MIN));
             }
-            if (newX > X_MAX) {
-                newX = X_MAX;
+            else if (myRotZ > Z_ROT_MAX) {
+                // E.G. above values = +89 & +86
+                // WANT:  rotate -3 (+ 89) -> 86
+                // do a reverse rotation to keep at MAX
+                transform.Rotate(0, 0, -(myRotZ - Z_ROT_MAX));
             }
-            Vector3 my_pos = transform.position;
-            transform.position = new Vector3(newX, my_pos.y, my_pos.z);
         }
 
         if (ballBeingHeld) {
             // move ball held horizontally as well
-            ballBeingHeld.transform.position = this.transform.position;
+            ballBeingHeld.transform.position = transform.position;
         }
     }
 
@@ -101,7 +120,7 @@ public class BallDropper : MonoBehaviour
     {
         // Debug.Log("ENTER BallDropper.GenerateBall()");
         var newBall = Instantiate(ballPrefab,
-                        this.transform.position,
+                        transform.position,
                         ballPrefab.transform.rotation).gameObject;
         ballIndex += 1;
         newBall.name += $"_{ballIndex}";  // append index to ball name for identification
@@ -113,6 +132,6 @@ public class BallDropper : MonoBehaviour
         // Debug.Log("ENTER BallDropper.DropBall()");
         Rigidbody ballHeldRb = ballBeingHeld.GetComponent<Rigidbody>();
         ballHeldRb.velocity = Vector3.zero;  // clear first
-        ballHeldRb.AddForce(Vector3.down * Ball_Drop_Force, ForceMode.Acceleration);
+        ballHeldRb.AddForce(Vector3.down * BallDropForce, ForceMode.Acceleration);
     }
 }
