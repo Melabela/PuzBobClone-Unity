@@ -6,25 +6,19 @@ public class BallShooter : MonoBehaviour
 {
     [SerializeField] GameObject ballPrefab;
 
-    // [SerializeField] float HORIZ_SPEED_MULT = 6.0f;
-
-    // bounds, based on center coords
-    // [SerializeField] float X_MIN = 0 + 0.5f;
-    // [SerializeField] float X_MAX = 8 - 0.5f;
-
-
     // rotation bound
     [SerializeField] float ROTATION_SPEED_MULT = 60.0f;
     [SerializeField] float Z_ROT_MIN = -86;
     [SerializeField] float Z_ROT_MAX = +86;
 
-    [SerializeField] float BallDropForce = 6.0f;
+    [SerializeField] float BallShootForce = 12.0f;
 
     // local state
     bool isHoldingBall;  // dropper has ball attached
     bool isBallDropped;  // ball released, waiting
     int ballIndex;
     GameObject ballBeingHeld;
+    Transform transformArrowRef;  // gameobject that's on the arrow pointer
 
     // Start is called before the first frame update
     void Start()
@@ -35,6 +29,8 @@ public class BallShooter : MonoBehaviour
         isBallDropped = false;
         ballIndex = 0;
         ballBeingHeld = null;
+
+        transformArrowRef = transform.Find("Shooter_ArrowRef");
     }
 
     // Update is called once per frame
@@ -110,7 +106,7 @@ public class BallShooter : MonoBehaviour
             if (Input.GetButton("Jump")) {
                 isHoldingBall = false;
                 isBallDropped = true;
-                DropBall();
+                ShootBall();
                 ballBeingHeld = null;
             }
         }
@@ -127,11 +123,15 @@ public class BallShooter : MonoBehaviour
         ballBeingHeld = newBall;
     }
 
-    void DropBall()
+    void ShootBall()
     {
-        // Debug.Log("ENTER BallDropper.DropBall()");
+        // Debug.Log("ENTER BallDropper.ShootBall()");
         Rigidbody ballHeldRb = ballBeingHeld.GetComponent<Rigidbody>();
         ballHeldRb.velocity = Vector3.zero;  // clear first
-        ballHeldRb.AddForce(Vector3.down * BallDropForce, ForceMode.Acceleration);
+
+        // determine angle
+        Vector3 arrowDir = transformArrowRef.position - transform.position;
+        // Debug.Log($"ShootBall() - arrowDir={arrowDir}");
+        ballHeldRb.AddForce(Vector3.Normalize(arrowDir) * BallShootForce, ForceMode.Impulse);
     }
 }
