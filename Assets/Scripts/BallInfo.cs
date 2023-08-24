@@ -33,8 +33,10 @@ public class BallInfo : MonoBehaviour
     // GameObject gridObj;
 
     // internal vars / state
-    int my_id;
+    Rigidbody myRb;
+    int myId;
     bool bDetectCollision;
+    Vector3 lastVelocity;
 
     // Start is called before the first frame update
     void Start()
@@ -42,8 +44,10 @@ public class BallInfo : MonoBehaviour
         ballShooterObj = GameObject.Find("BallShooter");
         // gridObj = GameObject.Find("Grid");
 
-        my_id = Random.Range(BALL_MIN_ID, BALL_MAX_ID + 1);
-        // Debug.Log($"BallInfo.Start() - my_id={my_id}");
+        myRb = GetComponent<Rigidbody>();
+
+        myId = Random.Range(BALL_MIN_ID, BALL_MAX_ID + 1);
+        // Debug.Log($"BallInfo.Start() - myId={myId}");
         UpdateColor();
 
         bDetectCollision = true;
@@ -55,12 +59,23 @@ public class BallInfo : MonoBehaviour
     {
     }
 
+    // FixedUpdate is called every physics step
+    // REF: https://gamedev.stackexchange.com/a/197366
+    void FixedUpdate()
+    {
+        // need PREVIOUS velocity, since within OnCollisionEnter()
+        // collision has already occurred, and lost previous motion
+        if (bDetectCollision) {
+            lastVelocity = myRb.velocity;
+        }
+    }
+
     void UpdateColor()
     {
-        if ((my_id >= BALL_MIN_ID) && (my_id <= BALL_MAX_ID))
+        if ((myId >= BALL_MIN_ID) && (myId <= BALL_MAX_ID))
         {
             // active state
-            var color_name = ballIndexToColorName[my_id];
+            var color_name = ballIndexToColorName[myId];
             var material_name = ballColorNameToMaterialName[color_name];
             var color_material = Resources.Load<Material>(material_name);
 
@@ -78,18 +93,27 @@ public class BallInfo : MonoBehaviour
         }
 
         string otherObjTag = collision.gameObject.tag;
-        Debug.Log($"ENTER BallInfo.OnCollisionEnter() - bDetectCollision={bDetectCollision}, otherObjTag={otherObjTag}");
+        // Debug.Log($"ENTER BallInfo.OnCollisionEnter() - bDetectCollision={bDetectCollision}, otherObjTag={otherObjTag}");
+
+        // if hit side wall, reflect motion on x-axis, "bounce" the other way
+        if (otherObjTag == "SideWall") {
+            // NOTE1:  Cannot use current myRb.velocity, has already impacted and lost previous travel
+            // NOTE2:  keep checking collisions after wall-bounce
+
+            // Debug.Log($"SideWall collision: lastVelo={lastVelocity}");
+            Vector3 reflectNormal = (lastVelocity.x < 0) ? Vector3.right : Vector3.left;
+            Vector3 newVelocity = Vector3.Reflect(lastVelocity, reflectNormal);
+            myRb.velocity = newVelocity;
+            // Debug.Log($"SideWall collision: reflNormal={reflectNormal}, newVelo={newVelocity}");
+        }
 
         // only stop on contact w/ objects of these two types
         if ( (otherObjTag == "BottomWall") || (otherObjTag == "PlayedBall") ) {
             bDetectCollision = false;
-
-            // stop movement & forces
-            Rigidbody ballRb = GetComponent<Rigidbody>();
-            ballRb.velocity = Vector3.zero;
-
             // update tag, to become detector to future ball drops
             tag = "PlayedBall";
+            // stop movement & forces
+            myRb.velocity = Vector3.zero;
 
             // notify dropper
             BallShooter ballShooterScript = ballShooterObj.GetComponent<BallShooter>();
