@@ -1,3 +1,4 @@
+using System;  // for Math
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -19,6 +20,7 @@ public class BallShooter : MonoBehaviour
     int ballIndex;
     GameObject ballBeingHeld;
     Transform transformArrowRef;  // gameobject that's on the arrow pointer
+    GameObject shooterGuide;
 
     // Start is called before the first frame update
     void Start()
@@ -31,6 +33,8 @@ public class BallShooter : MonoBehaviour
         ballBeingHeld = null;
 
         transformArrowRef = transform.Find("Shooter_ArrowRef");
+        shooterGuide = GameObject.Find("Shooter_Guide");
+        UpdateShotGuide();
     }
 
     // Update is called once per frame
@@ -48,6 +52,7 @@ public class BallShooter : MonoBehaviour
         if (isBallDropped) {
             isBallDropped = false;
         }
+        UpdateShotGuide();
     }
 
     void RotateSelf()
@@ -78,12 +83,45 @@ public class BallShooter : MonoBehaviour
                 // do a reverse rotation to keep at MAX
                 transform.Rotate(0, 0, -(myRotZ - Z_ROT_MAX));
             }
-        }
 
-        if (ballBeingHeld) {
-            // move ball held horizontally as well
-            ballBeingHeld.transform.position = transform.position;
+            UpdateShotGuide();
         }
+    }
+
+    // rotation in z-axis, for XY rotation, between two points (on XY plane)
+    float GetCorrectZRotAngle(Vector3 ptFrom, Vector3 ptTo)
+    {
+        float xDiff = ptFrom.x - ptTo.x;
+        float yDiff = ptFrom.y - ptTo.y;
+
+        double atanAngle = Math.Atan2(yDiff, xDiff) * (180 / Math.PI);
+        return (float)atanAngle;
+    }
+
+    void UpdateShotGuide()
+    {
+        Vector3 vOrigin = transformArrowRef.position;
+        Vector3 vArrowDir = transformArrowRef.position - transform.position;
+
+        RaycastHit hitInfo;
+        bool bDidRayHit = Physics.Raycast(vOrigin, vArrowDir, out hitInfo, 100);
+        if (bDidRayHit){
+            // Debug.Log($"UpdateShotGuide - RayCast hitInfo.distance={hitInfo.distance}, hitObject.name={hitInfo.collider.gameObject.name}");
+            // Debug.Log($"UpdateShotGuide - RayCast transformArrowRef.pos={transformArrowRef.position}, hitInfo.point={hitInfo.point}");
+
+            // update shooter guide, position, etc.
+            Vector3 midPoint = (transformArrowRef.position + hitInfo.point) / 2;
+            shooterGuide.transform.position = midPoint;
+
+            Vector3 sg_localScale = shooterGuide.transform.localScale;
+            shooterGuide.transform.localScale = new Vector3(
+                    hitInfo.distance, sg_localScale.y, sg_localScale.z);
+
+            float zAngle = GetCorrectZRotAngle(transformArrowRef.position, hitInfo.point);
+            // Debug.Log($"UpdateShotGuide - RayCast midPoint={midPoint}, zAngle={zAngle}");
+            shooterGuide.transform.eulerAngles = new Vector3(0, 0, zAngle);
+        }
+        // Debug.DrawRay();
     }
 
     void CheckForDrop()
@@ -100,14 +138,14 @@ public class BallShooter : MonoBehaviour
             isHoldingBall = true;
             return;
         }
-
-        if (isHoldingBall) {
+        else {  // isHoldingBall == true
             // ready to drop ball, on Space Bar press
             if (Input.GetButton("Jump")) {
                 isHoldingBall = false;
                 isBallDropped = true;
                 ShootBall();
                 ballBeingHeld = null;
+                return;
             }
         }
     }
@@ -121,6 +159,10 @@ public class BallShooter : MonoBehaviour
         ballIndex += 1;
         newBall.name += $"_{ballIndex}";  // append index to ball name for identification
         ballBeingHeld = newBall;
+
+        // clear motion on new ball
+        Rigidbody ballHeldRb = ballBeingHeld.GetComponent<Rigidbody>();
+        ballHeldRb.velocity = Vector3.zero;  // clear first
     }
 
     void ShootBall()
