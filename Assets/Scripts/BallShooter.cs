@@ -21,6 +21,7 @@ public class BallShooter : MonoBehaviour
     GameObject ballBeingHeld;
     Transform transformArrowRef;  // gameobject that's on the arrow pointer
     GameObject shooterGuide;
+    GameObject shooterGuide2;
 
     // Start is called before the first frame update
     void Start()
@@ -34,6 +35,7 @@ public class BallShooter : MonoBehaviour
 
         transformArrowRef = transform.Find("Shooter_ArrowRef");
         shooterGuide = GameObject.Find("Shooter_Guide");
+        shooterGuide2 = GameObject.Find("Shooter_Guide_2");
         UpdateShotGuide();
     }
 
@@ -89,7 +91,7 @@ public class BallShooter : MonoBehaviour
     }
 
     // rotation in z-axis, for XY rotation, between two points (on XY plane)
-    float GetCorrectZRotAngle(Vector3 ptFrom, Vector3 ptTo)
+    float GetZRotateAngle(Vector3 ptFrom, Vector3 ptTo)
     {
         float xDiff = ptFrom.x - ptTo.x;
         float yDiff = ptFrom.y - ptTo.y;
@@ -109,7 +111,7 @@ public class BallShooter : MonoBehaviour
             // Debug.Log($"UpdateShotGuide - RayCast hitInfo.distance={hitInfo.distance}, hitObject.name={hitInfo.collider.gameObject.name}");
             // Debug.Log($"UpdateShotGuide - RayCast transformArrowRef.pos={transformArrowRef.position}, hitInfo.point={hitInfo.point}");
 
-            // update shooter guide, position, etc.
+            // update shooter guide
             Vector3 midPoint = (transformArrowRef.position + hitInfo.point) / 2;
             shooterGuide.transform.position = midPoint;
 
@@ -117,11 +119,44 @@ public class BallShooter : MonoBehaviour
             shooterGuide.transform.localScale = new Vector3(
                     hitInfo.distance, sg_localScale.y, sg_localScale.z);
 
-            float zAngle = GetCorrectZRotAngle(transformArrowRef.position, hitInfo.point);
+            float zAngle = GetZRotateAngle(transformArrowRef.position, hitInfo.point);
             // Debug.Log($"UpdateShotGuide - RayCast midPoint={midPoint}, zAngle={zAngle}");
             shooterGuide.transform.eulerAngles = new Vector3(0, 0, zAngle);
+
+            // if first bounce is to side-wall,
+            //  give a second guide, to show post-bounce direction
+            GameObject rayHitObj = hitInfo.collider.gameObject;
+            if (rayHitObj.tag == "SideWall") {
+                shooterGuide2.SetActive(true);
+                UpdateShotGuide2nd(transformArrowRef.position, hitInfo.point);
+            } else {
+                shooterGuide2.SetActive(false);
+            }
         }
-        // Debug.DrawRay();
+    }
+
+    void UpdateShotGuide2nd(Vector3 arrowRefPos, Vector3 sideWallHitPoint)
+    {
+        Vector3 reflectNormal = (sideWallHitPoint.x < arrowRefPos.x) ? Vector3.right : Vector3.left;
+        Vector3 beforeBounceDir = (sideWallHitPoint - arrowRefPos).normalized;
+        Vector3 afterBounceDir = Vector3.Reflect(beforeBounceDir, reflectNormal);
+
+        // RayCast from point where would bounce on wall
+        RaycastHit hitInfo;
+        bool bDidRayHit = Physics.Raycast(sideWallHitPoint, afterBounceDir, out hitInfo, 100);
+        if (bDidRayHit){
+            // update 2nd shooter (after first side-wall bounce) guide
+            Vector3 midPoint = (sideWallHitPoint + hitInfo.point) / 2;
+            shooterGuide2.transform.position = midPoint;
+
+            Vector3 sg_localScale = shooterGuide2.transform.localScale;
+            shooterGuide2.transform.localScale = new Vector3(
+                    hitInfo.distance, sg_localScale.y, sg_localScale.z);
+
+            float zAngle = GetZRotateAngle(sideWallHitPoint, hitInfo.point);
+            // Debug.Log($"UpdateShotGuide2nd - RayCast midPoint={midPoint}, zAngle={zAngle}");
+            shooterGuide2.transform.eulerAngles = new Vector3(0, 0, zAngle);
+        }
     }
 
     void CheckForDrop()
