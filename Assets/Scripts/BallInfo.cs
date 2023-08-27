@@ -30,7 +30,7 @@ public class BallInfo : MonoBehaviour
 
     // other object references
     GameObject ballShooterObj;
-    // GameObject gridObj;
+    GridPositions gridPosScript;
 
     // internal vars / state
     Rigidbody myRb;
@@ -42,7 +42,8 @@ public class BallInfo : MonoBehaviour
     void Start()
     {
         ballShooterObj = GameObject.Find("BallShooter");
-        // gridObj = GameObject.Find("Grid");
+        GameObject gridObj = GameObject.Find("Grid");
+        gridPosScript = gridObj.GetComponent<GridPositions>();
 
         myRb = GetComponent<Rigidbody>();
 
@@ -115,6 +116,12 @@ public class BallInfo : MonoBehaviour
             // stop movement & forces
             myRb.velocity = Vector3.zero;
             myRb.constraints |= RigidbodyConstraints.FreezePosition;
+
+            // snap position to closest in grid
+            Vector2Int gridPos = gridPosScript.GetClosestPositionForCenterCoord(transform.position);
+            Vector3 gridCoordForBall = gridPosScript.GetCenterCoordForPosition(gridPos);
+            Debug.Log($"Snap Ball to grid: posAt={transform.position}, posSnapTo={gridCoordForBall}, gridPos={gridPos}");
+            transform.position = gridCoordForBall;
 
             // notify dropper
             BallShooter ballShooterScript = ballShooterObj.GetComponent<BallShooter>();
