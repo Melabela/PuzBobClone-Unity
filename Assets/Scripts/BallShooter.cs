@@ -102,33 +102,34 @@ public class BallShooter : MonoBehaviour
 
     void UpdateShotGuide()
     {
-        Vector3 vOrigin = transformArrowRef.position;
-        Vector3 vArrowDir = transformArrowRef.position - transform.position;
+        Vector3 arrowRefPos = transformArrowRef.position;  // nickname, as we use often
+        Vector3 vArrowDir = arrowRefPos - transform.position;
 
         RaycastHit hitInfo;
-        bool bDidRayHit = Physics.Raycast(vOrigin, vArrowDir, out hitInfo, 100);
+        bool bDidRayHit = Physics.Raycast(arrowRefPos, vArrowDir, out hitInfo, 100);
         if (bDidRayHit){
             // Debug.Log($"UpdateShotGuide - RayCast hitInfo.distance={hitInfo.distance}, hitObject.name={hitInfo.collider.gameObject.name}");
             // Debug.Log($"UpdateShotGuide - RayCast transformArrowRef.pos={transformArrowRef.position}, hitInfo.point={hitInfo.point}");
 
             // update shooter guide
-            Vector3 midPoint = (transformArrowRef.position + hitInfo.point) / 2;
+            Vector3 hitPoint = hitInfo.point;  // nickname, as we use often
+            Vector3 midPoint = (arrowRefPos + hitPoint) /2;
             shooterGuide.transform.position = midPoint;
 
             Vector3 sg_localScale = shooterGuide.transform.localScale;
             shooterGuide.transform.localScale = new Vector3(
                     hitInfo.distance, sg_localScale.y, sg_localScale.z);
 
-            float zAngle = GetZRotateAngle(transformArrowRef.position, hitInfo.point);
+            float zAngle = GetZRotateAngle(arrowRefPos, hitPoint);
             // Debug.Log($"UpdateShotGuide - RayCast midPoint={midPoint}, zAngle={zAngle}");
             shooterGuide.transform.eulerAngles = new Vector3(0, 0, zAngle);
 
             // if first bounce is to side-wall,
             //  give a second guide, to show post-bounce direction
             GameObject rayHitObj = hitInfo.collider.gameObject;
-            if (rayHitObj.tag == "SideWall") {
+            if (rayHitObj.tag == "SideWallRaycastDetect") {
                 shooterGuide2.SetActive(true);
-                UpdateShotGuide2nd(transformArrowRef.position, hitInfo.point);
+                UpdateShotGuide2nd(arrowRefPos, hitPoint);
             } else {
                 shooterGuide2.SetActive(false);
             }
