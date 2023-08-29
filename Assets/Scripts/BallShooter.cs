@@ -127,7 +127,7 @@ public class BallShooter : MonoBehaviour
             // if first bounce is to side-wall,
             //  give a second guide, to show post-bounce direction
             GameObject rayHitObj = hitInfo.collider.gameObject;
-            if (rayHitObj.tag == "SideWallRaycastDetect") {
+            if (rayHitObj.CompareTag("SideWallRaycastDetect")) {
                 shooterGuide2.SetActive(true);
                 UpdateShotGuide2nd(arrowRefPos, hitPoint);
             } else {

@@ -93,11 +93,11 @@ public class BallInfo : MonoBehaviour
             return;
         }
 
-        string otherObjTag = collision.gameObject.tag;
+        GameObject otherObj = collision.gameObject;
         // Debug.Log($"ENTER BallInfo.OnCollisionEnter() - bDetectCollision={bDetectCollision}, otherObjTag={otherObjTag}");
 
         // if hit side wall, reflect motion on x-axis, "bounce" the other way
-        if (otherObjTag == "SideWall") {
+        if (otherObj.CompareTag("SideWall")) {
             // NOTE1:  Cannot use current myRb.velocity, has already impacted and lost previous travel
             // NOTE2:  keep checking collisions after wall-bounce
 
@@ -109,7 +109,7 @@ public class BallInfo : MonoBehaviour
         }
 
         // only stop on contact w/ objects of these two types
-        if ( (otherObjTag == "BottomWall") || (otherObjTag == "PlayedBall") ) {
+        if (otherObj.CompareTag("BottomWall") || otherObj.CompareTag("PlayedBall")) {
             bDetectCollision = false;
             // update tag, to become detector to future ball drops
             tag = "PlayedBall";
