@@ -1,15 +1,18 @@
 using System;  // for Math
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 /****
- * Positions Example
- * |x x x x x| (0, 4),  (2, 4),  (4, 4), ...
- * | x x x x |     (1, 3),  (3, 3),  (5, 3), ...
- * |x x x x x| (0, 2),  (2, 2),  (4, 2), ...
- * | x x x x |     (1, 1),  (3, 1),  (5, 1), ...
- * |x x x x x| (0, 0),  (2, 0),  (4, 0), ...
+ * For GRID_ROWS = 5, and GRID_COLS = 5:
+ *
+ * Positions Example  (x, y)
+ * |x x x x x| (0, 4),  (2, 4),  (4, 4),  (6, 4),  (8, 4)
+ * | x x x x |     (1, 3),  (3, 3),  (5, 3),  (7, 3)
+ * |x x x x x| (0, 2),  (2, 2),  (4, 2),  (6, 2),  (8, 2)
+ * | x x x x |     (1, 1),  (3, 1),  (5, 1),  (7, 1)
+ * |x x x x x| (0, 0),  (2, 0),  (4, 0),  (6, 0),  (8, 0)
  *
  * Notes
  * - So even rows (y), will use even horiz positions (x)
@@ -75,7 +78,6 @@ public class GridPositions : MonoBehaviour
     public Vector2Int GetClosestPositionForCenterCoord(Vector3 coord)
     {
         // ignore Z-coord.
-
         // reverse above calculations
         float pX = (coord.x / half_unit) - 1;
         float pY = (coord.y - half_unit) / height_unit;
@@ -84,27 +86,94 @@ public class GridPositions : MonoBehaviour
         // round to nearest integer position
         int ipY = (int)Math.Round(pY);
         int ipX;
-        float scaleDownX;
-
         // depending on row, X-pos needs to align odd or even!
         if ((ipY & 0x1) == 1) {
             // -- odd row
             // -- (e.g. pX = 6.4: -> 5.4 -> 2.7;  round = 3; -> 6 -> 7)
             // scale down to allowed positions
-            scaleDownX = (pX - 1) / 2;
+            float scaleDownX = (pX - 1) / 2;
             // THEN round, and rescale back up
             ipX = ((int)Math.Round(scaleDownX) * 2) + 1;
         } else {
             // -- even row
             // -- (e.g. pX = 4.8: -> 2.4;  round = 2; -> 4)
             // scale down to allowed positions
-            scaleDownX = pX / 2;
+            float scaleDownX = pX / 2;
             // THEN round, and rescale back up
             ipX = (int)Math.Round(scaleDownX) * 2;
         }
 
         Vector2Int pos = new Vector2Int(ipX, ipY);
+
+        // additional check... closest position at edge maybe outside grid
+        //  (esp. for odd rows)
+        if (!IsPosWithinGrid(pos)) {
+            pos = GetNearestValidPositionForCoord(pos, coord);
+        }
+
         return pos;
+    }
+
+    bool IsPosWithinGrid(Vector2Int pos)
+    {
+        // check 1. - is within bounds
+        int maxAllowedXPos = (GRID_COLS - 1) * 2;  // e.g. 8 cols -> x==14
+        if ( (pos.x < 0) || (pos.x > maxAllowedXPos) ) {
+            return false;
+        }
+        if ( (pos.y < 0) || (pos.y >= GRID_ROWS) ) {
+            return false;
+        }
+
+        // check 2. - column is odd/even depending on the row
+        // - for odd  row (y):  col values (x) should be odd  as well
+        // - for even row (y):  col values (x) should be even as well
+        if ((pos.y & 0x1) != (pos.x & 0x1)) {
+            return false;
+        }
+
+        // passed all checks
+        return true;
+    }
+
+    // since grid is in hex pattern, can have up to 6 neighbors
+    //    x   x
+    //  x   P   x
+    //    x   x
+    List<Vector2Int> GetNeighboringPositions(Vector2Int gridPos)
+    {
+        List<Vector2Int> neighbPos = new List<Vector2Int>(){
+            gridPos + new Vector2Int(-1, +1),  // upper-left
+            gridPos + new Vector2Int(+1, +1),  // upper-right
+            gridPos + new Vector2Int(-2,  0),  // center-left
+            gridPos + new Vector2Int(+2,  0),  // center-right
+            gridPos + new Vector2Int(-1, -1),  // lower-left
+            gridPos + new Vector2Int(-1, +1)   // lower-right
+        };
+
+        // filter and keep only positions which are in-bounds
+        List<Vector2Int> neighbPosFiltered =
+                neighbPos.Where(pos => IsPosWithinGrid(pos)).ToList();
+        return neighbPosFiltered;
+    }
+
+    Vector2Int GetNearestValidPositionForCoord(Vector2Int computedPos, Vector3 refCoord)
+    {
+        List<Vector2Int> neighbPosToCheck = GetNeighboringPositions(computedPos);
+
+        Vector2Int nearestPos = computedPos;
+        float nearestDistance = float.MaxValue;
+        foreach (Vector2Int pos in neighbPosToCheck)
+        {
+            Vector3 coordAtPos = GetCenterCoordForPosition(pos);
+            float dist = Vector3.Distance(coordAtPos, refCoord);
+            if (dist < nearestDistance) {
+                nearestDistance = dist;
+                nearestPos = pos;
+            }
+        }
+        // Debug.Log($"GetNearestValidPositionForCoord() - computedPos={computedPos}, nearestPos={nearestPos}");
+        return nearestPos;
     }
 
     void FillGridWithBalls()
