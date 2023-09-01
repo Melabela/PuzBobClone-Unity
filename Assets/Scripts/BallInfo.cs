@@ -126,6 +126,9 @@ public class BallInfo : MonoBehaviour
             // notify dropper
             BallShooter ballShooterScript = ballShooterObj.GetComponent<BallShooter>();
             ballShooterScript.BallDropDone();
+
+            // also mark ball in grid
+            gridPosScript.MarkBallInGrid(gridPos, myId, gameObject);
         }
     }
 }

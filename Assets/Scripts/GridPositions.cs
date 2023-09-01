@@ -1,6 +1,7 @@
 using System;  // for Math
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;  // for StringBuilder
 using System.Linq;
 using UnityEngine;
 
@@ -26,13 +27,19 @@ public class GridPositions : MonoBehaviour
     [SerializeField] float Z_COORD = 0.0f;  // set constant
     [SerializeField] GameObject ballPrefab;
 
-    private float half_unit;    // radius
-    private float height_unit;  // "orange stacking" rows
+    float half_unit;    // radius
+    float height_unit;  // "orange stacking" row height
+
+    // create arrays for grid storage, indexed as (x, y)
+    int maxAllowedXPos;  // inclusive
+    int[,] gridBallIds;
+    GameObject[,] gridBallObjs;
 
     // Start is called before the first frame update
     void Start()
     {
-        GridInit();
+        GridUnitInit();
+        GridStorageInit();
         // FillGridWithBalls();
     }
 
@@ -41,7 +48,7 @@ public class GridPositions : MonoBehaviour
     {
     }
 
-    void GridInit()
+    void GridUnitInit()
     {
         half_unit = GRID_UNIT_SIZE / 2.0f;
 
@@ -51,6 +58,18 @@ public class GridPositions : MonoBehaviour
         height_unit = (float) Math.Sqrt(
             Math.Pow(GRID_UNIT_SIZE, 2) - Math.Pow(half_unit, 2)
             );
+    }
+
+    void GridStorageInit()
+    {
+        maxAllowedXPos = (GRID_COLS - 1) * 2;  // e.g. 8 cols -> x==14
+        gridBallIds = new int[maxAllowedXPos + 1, GRID_ROWS];
+        gridBallObjs = new GameObject[maxAllowedXPos + 1, GRID_ROWS];
+    }
+
+    bool IsOdd(int n)
+    {
+        return (n & 0x1) == 1;
     }
 
     public Vector3 GetCenterCoordForPosition(Vector2Int pos)
@@ -87,7 +106,7 @@ public class GridPositions : MonoBehaviour
         int ipY = (int)Math.Round(pY);
         int ipX;
         // depending on row, X-pos needs to align odd or even!
-        if ((ipY & 0x1) == 1) {
+        if (IsOdd(ipY)) {
             // -- odd row
             // -- (e.g. pX = 6.4: -> 5.4 -> 2.7;  round = 3; -> 6 -> 7)
             // scale down to allowed positions
@@ -117,7 +136,6 @@ public class GridPositions : MonoBehaviour
     bool IsPosWithinGrid(Vector2Int pos)
     {
         // check 1. - is within bounds
-        int maxAllowedXPos = (GRID_COLS - 1) * 2;  // e.g. 8 cols -> x==14
         if ( (pos.x < 0) || (pos.x > maxAllowedXPos) ) {
             return false;
         }
@@ -128,7 +146,7 @@ public class GridPositions : MonoBehaviour
         // check 2. - column is odd/even depending on the row
         // - for odd  row (y):  col values (x) should be odd  as well
         // - for even row (y):  col values (x) should be even as well
-        if ((pos.y & 0x1) != (pos.x & 0x1)) {
+        if (IsOdd(pos.y) != IsOdd(pos.x)) {
             return false;
         }
 
@@ -180,18 +198,14 @@ public class GridPositions : MonoBehaviour
     {
         for (int y = 0; y < GRID_ROWS; y++)
         {
-            for (int x = 0; x < GRID_COLS; x++)
+            bool bIsRowOdd = IsOdd(y);
+
+            // odd row has one less ball, than even
+            int xAcross = bIsRowOdd ? (GRID_COLS - 1) : GRID_COLS;
+            for (int xBall = 0; xBall < xAcross; xBall++)
             {
-                int realXPos = x * 2;
-                if ((y & 0x1) == 1) {
-                    // odd row...
-                    // - has one less ball... exit loop iteration early, if at end
-                    if (x == (GRID_COLS - 1)) {
-                        continue;
-                    }
-                    // - also, offset xPos by 1, make odd to stagger
-                    realXPos += 1;
-                }
+                // if odd-row, offset xPos by 1 to make it odd as well
+                int realXPos = (xBall * 2) + (bIsRowOdd ? 1 : 0);
 
                 Vector2Int ballPosn = new Vector2Int(realXPos, y);
                 Vector3 ballCoords = GetCenterCoordForPosition(ballPosn);
@@ -204,4 +218,99 @@ public class GridPositions : MonoBehaviour
             }
         }
     }
+
+    void ClearBallInGrid(Vector2Int posInGrid)
+    {
+        if (!IsPosWithinGrid(posInGrid)) {
+            Debug.LogWarning($"ClearBallInGrid() - ignoring call w/ invalid posInGrid={posInGrid}");
+            return;  // exit early
+        }
+
+        // Debug.Log($"ClearBallInGrid() called w/ posInGrid={posInGrid}");
+        gridBallIds[posInGrid.x, posInGrid.y] = 0;
+        gridBallObjs[posInGrid.x, posInGrid.y] = null;
+    }
+
+    public void MarkBallInGrid(Vector2Int posInGrid, int ballId, GameObject ballObj)
+    {
+        if (!IsPosWithinGrid(posInGrid)) {
+            Debug.LogWarning($"MarkBallInGrid() - ignoring call w/ invalid posInGrid={posInGrid}");
+            return;  // exit early
+        }
+
+        // Debug.Log($"MarkBallInGrid() called w/ posInGrid={posInGrid}, ballId={ballId}, ballObj={ballObj}");
+        gridBallIds[posInGrid.x, posInGrid.y] = ballId;
+        gridBallObjs[posInGrid.x, posInGrid.y] = ballObj;
+
+        // DEBUG ONLY!
+        string gridDebug = ShowBallIdsInGrid();
+        Debug.Log($"ShowBallIdsInGrid():\n{gridDebug}");
+    }
+
+    // e.g. use for debugging
+    string ShowBallIdsInGrid()
+    {
+        // (x + 6)... 6 = two chars for row#, two pipe(|)-chars for edge,
+        //                one for zeroth elem, and one for new-line
+        int estimRowStrLen = maxAllowedXPos + 6;
+        // 3 extra rows = for bottomLine, & two-digit x-pos
+        int estimFullStrLen = estimRowStrLen * (GRID_ROWS + 3);
+
+        StringBuilder sbRow = new StringBuilder(estimRowStrLen);
+        StringBuilder sbGrid = new StringBuilder(estimFullStrLen);
+
+        for (int y = GRID_ROWS - 1; y >= 0; y--)
+        {
+            bool bIsRowOdd = IsOdd(y);
+            sbRow.Clear();
+
+            string oddRowSpace = bIsRowOdd ? " " : "";
+            // include row number at left
+            sbRow.AppendFormat("{0,2}|{1}", y, oddRowSpace);  // "rr|" or "rr| "
+
+            // odd row has one less ball, than even
+            int xAcross = bIsRowOdd ? (GRID_COLS - 1) : GRID_COLS;
+            for (int xBall = 0; xBall < xAcross; xBall++)
+            {
+                // if odd-row, offset xPos by 1 to make it odd as well
+                int realXPos = (xBall * 2) + (bIsRowOdd ? 1 : 0);
+                string spaceBtwn = (xBall > 0) ? " " : "";  // AFTER first ball, add space between
+
+                int ballId = gridBallIds[realXPos, y];
+                string ballStr = (ballId > 0) ? ballId.ToString() : ".";
+                sbRow.AppendFormat("{0}{1}", spaceBtwn, ballStr);
+            }
+
+            sbRow.AppendFormat("{0}|", oddRowSpace);  // "|" or " |"
+            // add constructed row to full string
+            sbGrid.AppendLine(sbRow.ToString());
+        }
+
+        // add bottom line
+        sbRow.Clear();
+        string bottomLine = new string('-', maxAllowedXPos + 1);  // repeat char (1st param), for count (2nd)
+        sbRow.AppendFormat("  +{0}+", bottomLine);  // two row digits, corner-char, horiz-line, and corner
+        sbGrid.AppendLine(sbRow.ToString());
+
+        // add col numbers at bottom
+        //  first row:  012 ... 891111 ...
+        // second row:            0123 ...
+        sbRow.Clear();
+        sbRow.Append("   ");  // two row digits, and |
+        for (int x = 0; x <= maxAllowedXPos; x++) {
+            sbRow.Append((x < 10) ? x : (x / 10));
+        }
+        sbGrid.AppendLine(sbRow.ToString());
+
+        sbRow.Clear();
+        sbRow.Append("   ");  // two row digits, and |
+        for (int x = 0; x <= maxAllowedXPos; x++) {
+            sbRow.Append((x < 10) ? " " : (x % 10));
+        }
+        sbGrid.AppendLine(sbRow.ToString());
+
+        // FINALLY, output set of lines assembled
+        return sbGrid.ToString();
+    }
+
 }
