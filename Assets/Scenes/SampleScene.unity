@@ -2051,8 +2051,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ballPrefab: {fileID: 4454080006201298128, guid: a8236689ab73949a4ae761998ebc9054, type: 3}
   ROTATION_SPEED_MULT: 60
-  Z_ROT_MIN: -86
-  Z_ROT_MAX: 86
+  Z_ROT_MIN: -82
+  Z_ROT_MAX: 82
   BallShootForce: 12
 --- !u!1 &1840497292
 GameObject:

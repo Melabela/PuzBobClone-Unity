@@ -9,8 +9,8 @@ public class BallShooter : MonoBehaviour
 
     // rotation bound
     [SerializeField] float ROTATION_SPEED_MULT = 60.0f;
-    [SerializeField] float Z_ROT_MIN = -86;
-    [SerializeField] float Z_ROT_MAX = +86;
+    [SerializeField] float Z_ROT_MIN = -82;
+    [SerializeField] float Z_ROT_MAX = +82;
 
     [SerializeField] float BallShootForce = 12.0f;
 
