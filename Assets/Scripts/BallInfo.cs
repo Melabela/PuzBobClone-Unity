@@ -60,6 +60,11 @@ public class BallInfo : MonoBehaviour
     {
     }
 
+    public int GetId()
+    {
+        return myId;
+    }
+
     // FixedUpdate is called every physics step
     // REF: https://gamedev.stackexchange.com/a/197366
     void FixedUpdate()

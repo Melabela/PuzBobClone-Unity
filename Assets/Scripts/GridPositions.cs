@@ -40,7 +40,7 @@ public class GridPositions : MonoBehaviour
     {
         GridUnitInit();
         GridStorageInit();
-        // FillGridWithBalls();
+        FillGridWithBalls(3);
     }
 
     // Update is called once per frame
@@ -50,7 +50,7 @@ public class GridPositions : MonoBehaviour
 
     void GridUnitInit()
     {
-        half_unit = GRID_UNIT_SIZE / 2.0f;
+        half_unit = GRID_UNIT_SIZE * 0.5f;
 
         // Pythagoras: a^2 + b^2 = c^2
         //   b = 0.5;  c = 1.0;  _(for unit grid)_
@@ -97,7 +97,7 @@ public class GridPositions : MonoBehaviour
     public Vector2Int GetClosestPositionForCenterCoord(Vector3 coord)
     {
         // ignore Z-coord.
-        // reverse above calculations
+        // reverse calculations in above fn
         float pX = (coord.x / half_unit) - 1;
         float pY = (coord.y - half_unit) / height_unit;
         // Debug.Log($"half_unit={half_unit}, height_unit={height_unit}");
@@ -194,9 +194,10 @@ public class GridPositions : MonoBehaviour
         return nearestPos;
     }
 
-    void FillGridWithBalls()
+    void FillGridWithBalls(int rowsToFill)
     {
-        for (int y = 0; y < GRID_ROWS; y++)
+        int maxY = Math.Min(GRID_ROWS, rowsToFill);
+        for (int y = 0; y < maxY; y++)
         {
             bool bIsRowOdd = IsOdd(y);
 
@@ -212,9 +213,13 @@ public class GridPositions : MonoBehaviour
                 // Debug.Log($"Pos x,y=({realXPos}, {y})");
                 // Debug.Log($"Coord x,y=({ballCoords.x}, {ballCoords.y})");
 
-                UnityEngine.Object newBall = Instantiate(ballPrefab, ballCoords,
-                                                ballPrefab.transform.rotation);
+                GameObject newBall = Instantiate(ballPrefab, ballCoords,
+                                            ballPrefab.transform.rotation);
                 newBall.name += $"_{realXPos},{y}";  // append (x,y) pos to name for identification
+
+                // mark ball on map
+                int ballId = newBall.GetComponent<BallInfo>().GetId();
+                MarkBallInGrid(ballPosn, ballId, newBall);
             }
         }
     }
