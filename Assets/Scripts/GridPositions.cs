@@ -21,11 +21,18 @@ using UnityEngine;
 
 public class GridPositions : MonoBehaviour
 {
+    // -- exposed & configurable variables --
     [SerializeField] int GRID_ROWS;
     [SerializeField] int GRID_COLS;
     [SerializeField] float GRID_UNIT_SIZE;  // diameter
+    // z-coordinate to use, when moving between gridPos -> 3d-coords
     [SerializeField] float Z_COORD = 0.0f;  // set constant
+    // prefab used to generate balls
     [SerializeField] GameObject ballPrefab;
+
+    // -- internal variables --
+    // minimum number of connected (adjacent) balls, needed to "pop" the chain
+    const int MIN_CONNECTED_BALLS_FOR_POP = 3;
 
     float half_unit;    // radius
     float height_unit;  // "orange stacking" row height
@@ -224,16 +231,24 @@ public class GridPositions : MonoBehaviour
         }
     }
 
-    void ClearBallInGrid(Vector2Int posInGrid)
+    public void ClearBallInGrid(Vector2Int posInGrid)
     {
         if (!IsPosWithinGrid(posInGrid)) {
             Debug.LogWarning($"ClearBallInGrid() - ignoring call w/ invalid posInGrid={posInGrid}");
             return;  // exit early
         }
 
-        // Debug.Log($"ClearBallInGrid() called w/ posInGrid={posInGrid}");
-        gridBallIds[posInGrid.x, posInGrid.y] = 0;
-        gridBallObjs[posInGrid.x, posInGrid.y] = null;
+        var ballIdAtPos = gridBallIds[posInGrid.x, posInGrid.y];
+        if (ballIdAtPos > 0) {
+            var ballObjAtPos = gridBallObjs[posInGrid.x, posInGrid.y];
+            if (ballObjAtPos) {
+                Destroy(ballObjAtPos);
+            }
+
+            // Debug.Log($"ClearBallInGrid() called w/ posInGrid={posInGrid}");
+            gridBallIds[posInGrid.x, posInGrid.y] = 0;
+            gridBallObjs[posInGrid.x, posInGrid.y] = null;
+        }
     }
 
     public void MarkBallInGrid(Vector2Int posInGrid, int ballId, GameObject ballObj)
@@ -248,8 +263,8 @@ public class GridPositions : MonoBehaviour
         gridBallObjs[posInGrid.x, posInGrid.y] = ballObj;
 
         // DEBUG ONLY!
-        string gridDebug = ShowBallIdsInGrid();
-        Debug.Log($"ShowBallIdsInGrid():\n{gridDebug}");
+        // string gridDebug = ShowBallIdsInGrid();
+        // Debug.Log($"ShowBallIdsInGrid():\n{gridDebug}");
     }
 
     // e.g. use for debugging
@@ -327,7 +342,7 @@ public class GridPositions : MonoBehaviour
     //      NOTE: either way, mark cloned-grid, to indicate we've checked that position
     // 3. with 2. should have done depth-first search to all adjacently connected positions
     // 4. if list.length > MIN_NUM_CONNECTED_TO_POP, then okay to pop the chain
-    public void CheckForChainedIds(int checkForId, Vector2Int checkFromPos)
+    public List<Vector2Int> CheckForChainedIds(int checkForId, Vector2Int checkFromPos)
     {
         // clone of id grid, to mark when walking neighbors
         int[,] gridBallIdsCloneToMark = (int[,])gridBallIds.Clone();
@@ -340,6 +355,14 @@ public class GridPositions : MonoBehaviour
         if (matchingPositions.Count > 1) {
             string debugStrMatchPos = string.Join(", ", matchingPositions.ConvertAll(pos => pos.ToString()).ToArray());
             Debug.Log($"CheckForChainedIds() - matchingPositions=[{debugStrMatchPos}]");
+        }
+
+        if (matchingPositions.Count >= MIN_CONNECTED_BALLS_FOR_POP) {
+            // return positions only if >= minimum_count required
+            return matchingPositions;
+        } else {
+            // else, return empty list
+            return new List<Vector2Int>();
         }
     }
 
