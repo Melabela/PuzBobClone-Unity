@@ -161,12 +161,12 @@ public class GridPositions : MonoBehaviour
     List<Vector2Int> GetNeighboringPositions(Vector2Int gridPos)
     {
         List<Vector2Int> neighbPos = new List<Vector2Int>(){
-            gridPos + new Vector2Int(-1, +1),  // upper-left
-            gridPos + new Vector2Int(+1, +1),  // upper-right
-            gridPos + new Vector2Int(-2,  0),  // center-left
-            gridPos + new Vector2Int(+2,  0),  // center-right
-            gridPos + new Vector2Int(-1, -1),  // lower-left
-            gridPos + new Vector2Int(+1, -1)   // lower-right
+            gridPos + new Vector2Int(-1, +1),  // left-upper
+            gridPos + new Vector2Int(+1, +1),  // right-upper
+            gridPos + new Vector2Int(-2,  0),  // fullLeft-sameRow
+            gridPos + new Vector2Int(+2,  0),  // fullRight-sameRow
+            gridPos + new Vector2Int(-1, -1),  // left-lower
+            gridPos + new Vector2Int(+1, -1)   // right-lower
         };
 
         // filter and keep only positions which are in-bounds
@@ -335,14 +335,17 @@ public class GridPositions : MonoBehaviour
         List<Vector2Int> matchingPositions = new List<Vector2Int>();
 
         FindIdAtGridPosAndNeighbors(checkForId, checkFromPos,
-                                    gridBallIdsCloneToMark, matchingPositions);
-        Debug.Log($"CheckForChainedToPop() - end of recursive check... got {matchingPositions.Count} matches");
-        Debug.Log($"CheckForChainedToPop() - matchingPositions={matchingPositions}");
+                                    ref gridBallIdsCloneToMark, matchingPositions);
+        Debug.Log($"CheckForChainedIds() - recursive check done from {checkFromPos}, id={checkForId}... got {matchingPositions.Count} matches");
+        if (matchingPositions.Count > 1) {
+            string debugStrMatchPos = string.Join(", ", matchingPositions.ConvertAll(pos => pos.ToString()).ToArray());
+            Debug.Log($"CheckForChainedIds() - matchingPositions=[{debugStrMatchPos}]");
+        }
     }
 
     bool FindIdAtGridPosAndNeighbors(int checkForId,            // id to find
                                      Vector2Int thisPos,        // current grid position to check
-                                     int[,] gridBallIdsToMark,  // cloned ballId grid, to check/mark when walking
+                                     ref int[,] gridBallIdsToMark,  // cloned ballId grid, to check/mark when walking
                                      List<Vector2Int> matchPositions)  // store of found positions
     {
         // check id at thisPos
@@ -351,7 +354,7 @@ public class GridPositions : MonoBehaviour
 
         // mark off current position, either way
         gridBallIdsToMark[thisPos.x, thisPos.y] = -1;  // negative ids not normally used
-        Debug.Log($"FindIdAtGridPosAndNeighbors() - at {thisPos}, bMatch={bMatch}");
+        // Debug.Log($"FindIdAtGridPosAndNeighbors() - at {thisPos}, bMatch={bMatch}");
 
         if (bMatch) {
             // add this position to found list
@@ -359,13 +362,14 @@ public class GridPositions : MonoBehaviour
 
             // get neighbor positions
             var neighborPositions = GetNeighboringPositions(thisPos);
-            // remove already walked positions from neighbors, avoid repeat checks or going into cycles
-            neighborPositions = neighborPositions.Where(
-                                    pos => gridBallIdsToMark[pos.x, pos.y] >= 0).ToList();
             // recursively call neighbor positions that are left
             foreach (var neighbPos in neighborPositions) {
-                FindIdAtGridPosAndNeighbors(checkForId, neighbPos,
-                                            gridBallIdsToMark, matchPositions);
+                // ignore already walked neighbors positions (-1),
+                //  to avoid repeat checks or going into cycles
+                if (gridBallIdsToMark[neighbPos.x, neighbPos.y] >= 0) {
+                    FindIdAtGridPosAndNeighbors(checkForId, neighbPos,
+                                                ref gridBallIdsToMark, matchPositions);
+                }
             }
         }
 
