@@ -166,7 +166,7 @@ public class GridPositions : MonoBehaviour
             gridPos + new Vector2Int(-2,  0),  // center-left
             gridPos + new Vector2Int(+2,  0),  // center-right
             gridPos + new Vector2Int(-1, -1),  // lower-left
-            gridPos + new Vector2Int(-1, +1)   // lower-right
+            gridPos + new Vector2Int(+1, -1)   // lower-right
         };
 
         // filter and keep only positions which are in-bounds
