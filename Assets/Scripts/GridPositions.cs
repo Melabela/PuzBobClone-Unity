@@ -318,4 +318,47 @@ public class GridPositions : MonoBehaviour
         return sbGrid.ToString();
     }
 
+    // rough algorithm
+    // 0. create a list to keep track of matching id (== color) positions
+    // 1. start at init position, and mark it if match
+    // 2. get 6 hexagonal neighbors, and foreach
+    //      a) if match, mark and call recursively to those positions
+    //      b) if not match, just return
+    //      NOTE: always pass list(reference) along, for additions
+    // 3. with 2. should have done depth-first search to all adjacently connected positions
+    // 4. if list.length > MIN_NUM_CONNECTED_TO_POP, then okay to pop the chain
+    public void CheckForChainedIds(int checkForId, Vector2Int checkFromPos)
+    {
+        // list of found positions
+        List<Vector2Int> matchingPositions = new List<Vector2Int>();
+
+        FindIdAtGridPosAndNeighbors(matchingPositions, checkForId, checkFromPos);
+        Debug.Log($"CheckForChainedToPop() - end of recursive check... got {matchingPositions.Count} matches");
+        Debug.Log($"CheckForChainedToPop() - matchingPositions={matchingPositions}");
+    }
+
+    bool FindIdAtGridPosAndNeighbors(List<Vector2Int> matchPositions, int checkForId, Vector2Int thisPos)
+    {
+        int idAtPos = gridBallIds[thisPos.x, thisPos.y];
+        bool bMatch = idAtPos == checkForId;
+
+        Debug.Log($"CheckGridPosAndAdjNeighborsForId() - at {thisPos}, bMatch={bMatch}");
+        if (bMatch) {
+            // add this position to list
+            matchPositions.Add(thisPos);
+
+            // recursively call neighbor positions
+            var neighborPositions = GetNeighboringPositions(thisPos);
+            // remove already found positions from neighbors, so we don't go into cycles
+            neighborPositions = neighborPositions.Where(
+                                    pos => !matchPositions.Contains(pos)).ToList();
+            // iterate neighbors that are left
+            foreach (var neighbPos in neighborPositions) {
+                FindIdAtGridPosAndNeighbors(matchPositions, checkForId, neighbPos);
+            }
+        }
+
+        return bMatch;
+    }
+
 }

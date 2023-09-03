@@ -134,6 +134,7 @@ public class BallInfo : MonoBehaviour
 
             // also mark ball in grid
             gridPosScript.MarkBallInGrid(gridPos, myId, gameObject);
+            gridPosScript.CheckForChainedIds(myId, gridPos);
         }
     }
 }
