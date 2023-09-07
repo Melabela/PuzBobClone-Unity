@@ -15,8 +15,8 @@ public class BallShooter : MonoBehaviour
     [SerializeField] float BallShootForce = 12.0f;
 
     // local state
-    bool isHoldingBall;  // dropper has ball attached
-    bool isBallDropped;  // ball released, waiting
+    bool isHoldingBall;  // shooter has ball attached
+    bool isBallShot;     // ball released, waiting
     int ballIndex;
     GameObject ballBeingHeld;
     Transform transformArrowRef;  // gameobject that's on the arrow pointer
@@ -29,7 +29,7 @@ public class BallShooter : MonoBehaviour
         // initial ball state
         // Update() will populate ball
         isHoldingBall = false;
-        isBallDropped = false;
+        isBallShot = false;
         ballIndex = 0;
         ballBeingHeld = null;
 
@@ -43,16 +43,16 @@ public class BallShooter : MonoBehaviour
     void Update()
     {
         RotateSelf();
-        CheckForDrop();
+        CheckForShot();
     }
 
-    // called from outside.  let's us know previous ball dropped
-    //  has settled, and we can create another in the dropper
-    public void BallDropDone()
+    // called from outside.  informs us that previous ball shot
+    //  has settled, and we can create another ball in the shooter
+    public void BallShotDone()
     {
-        // Debug.Log("ENTER BallDropper.BallDropDone");
-        if (isBallDropped) {
-            isBallDropped = false;
+        // Debug.Log("ENTER BallShooter.BallShotDone");
+        if (isBallShot) {
+            isBallShot = false;
         }
         UpdateShotGuide();
     }
@@ -160,14 +160,14 @@ public class BallShooter : MonoBehaviour
         }
     }
 
-    void CheckForDrop()
+    void CheckForShot()
     {
-        if (isBallDropped) {
+        if (isBallShot) {
             // waiting... nothing to do, return early!
             return;
         }
 
-        // one frame where !isBallDropped && !isHoldingBall
+        // one frame where !isBallShot && !isHoldingBall
         if (!isHoldingBall) {
             // generate a new ball to hold
             GenerateBall();
@@ -175,10 +175,10 @@ public class BallShooter : MonoBehaviour
             return;
         }
         else {  // isHoldingBall == true
-            // ready to drop ball, on Space Bar press
+            // ready to shoot ball, on Space Bar press
             if (Input.GetButton("Jump")) {
                 isHoldingBall = false;
-                isBallDropped = true;
+                isBallShot = true;
                 ShootBall();
                 ballBeingHeld = null;
                 return;
@@ -188,7 +188,7 @@ public class BallShooter : MonoBehaviour
 
     void GenerateBall()
     {
-        // Debug.Log("ENTER BallDropper.GenerateBall()");
+        // Debug.Log("ENTER BallShooter.GenerateBall()");
         var newBall = Instantiate(ballPrefab,
                         transform.position,
                         ballPrefab.transform.rotation).gameObject;
@@ -203,7 +203,7 @@ public class BallShooter : MonoBehaviour
 
     void ShootBall()
     {
-        // Debug.Log("ENTER BallDropper.ShootBall()");
+        // Debug.Log("ENTER BallShooter.ShootBall()");
         Rigidbody ballHeldRb = ballBeingHeld.GetComponent<Rigidbody>();
         ballHeldRb.velocity = Vector3.zero;  // clear first
 

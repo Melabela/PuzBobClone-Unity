@@ -172,7 +172,7 @@ public class BallInfo : MonoBehaviour
     void StopBallMovement()
     {
         bDetectCollision = false;
-        // update tag, to become detector to future ball drops
+        // update tag, to become detector to future ball shots
         tag = "PlayedBall";
         // stop movement & forces
         myRb.velocity = Vector3.zero;
@@ -193,9 +193,9 @@ public class BallInfo : MonoBehaviour
 
     void NotifyBallPlayed()
     {
-        // notify dropper
+        // notify shooter
         BallShooter ballShooterScript = ballShooterObj.GetComponent<BallShooter>();
-        ballShooterScript.BallDropDone();
+        ballShooterScript.BallShotDone();
 
         // also mark ball in grid
         gridPosScript.MarkBallInGrid(ballGridPos, myId, gameObject);
