@@ -7,6 +7,8 @@ public class BallInfo : MonoBehaviour
     static int BALL_MIN_ID = 1;  // inclusive
     static int BALL_MAX_ID = 6;  // inclusive
 
+    static float MASS_STOPPED_BALL = 1000f;
+
     static List<string> ballIndexToColorName = new List<string>()
     {
         "",       // [0]
@@ -37,6 +39,7 @@ public class BallInfo : MonoBehaviour
     int myId;
     bool bDetectCollision;
     Vector3 lastVelocity;
+    Vector2Int ballGridPos;
 
     // Start is called before the first frame update
     void Start()
@@ -111,35 +114,57 @@ public class BallInfo : MonoBehaviour
             Vector3 newVelocity = Vector3.Reflect(lastVelocity, reflectNormal);
             myRb.velocity = newVelocity;
             // Debug.Log($"SideWall collision: reflNormal={reflectNormal}, newVelo={newVelocity}");
+            return;
         }
 
-        // only stop on contact w/ objects of these two types
-        if (otherObj.CompareTag("BottomWall") || otherObj.CompareTag("PlayedBall")) {
-            bDetectCollision = false;
-            // update tag, to become detector to future ball drops
-            tag = "PlayedBall";
-            // stop movement & forces
-            myRb.velocity = Vector3.zero;
-            myRb.constraints |= RigidbodyConstraints.FreezePosition;
+        bool bStopThisBall = false;
 
-            // snap position to closest in grid
-            Vector2Int gridPos = gridPosScript.GetClosestPositionForCenterCoord(transform.position);
-            Vector3 gridCoordForBall = gridPosScript.GetCenterCoordForPosition(gridPos);
-            Debug.Log($"Snap Ball to grid: posAt={transform.position}, posSnapTo={gridCoordForBall}, gridPos={gridPos}");
-            transform.position = gridCoordForBall;
+        if (otherObj.CompareTag("BottomWall")) {
+            bStopThisBall = true;
+        }
+        else if (otherObj.CompareTag("PlayedBall")) {
+            bStopThisBall = true;
+        }
 
-            // notify dropper
-            BallShooter ballShooterScript = ballShooterObj.GetComponent<BallShooter>();
-            ballShooterScript.BallDropDone();
-
-            // also mark ball in grid
-            gridPosScript.MarkBallInGrid(gridPos, myId, gameObject);
-
-            // and check if it causes any clearing, for that color, from that position
-            var ballPosListToPop = gridPosScript.CheckForChainedIds(myId, gridPos);
-            foreach (var popBallPos in ballPosListToPop) {
-                gridPosScript.ClearBallInGrid(popBallPos);
-            }
+        // only stop on contact w/ objects of above two types
+        if (bStopThisBall) {
+            StopBallMovement();
+            SnapBallToPositionInGrid();
+            NotifyBallPlayed();
         }
     }
+
+    void StopBallMovement()
+    {
+        bDetectCollision = false;
+        // update tag, to become detector to future ball drops
+        tag = "PlayedBall";
+        // stop movement & forces
+        myRb.velocity = Vector3.zero;
+        myRb.constraints |= RigidbodyConstraints.FreezePosition;
+        // increase mass to stop movement from future collisions
+        myRb.mass = MASS_STOPPED_BALL;
+    }
+
+    void SnapBallToPositionInGrid()
+    {
+        // snap position to closest in grid
+        ballGridPos = gridPosScript.GetClosestPositionForCenterCoord(transform.position);
+        Vector3 gridCoordForBall = gridPosScript.GetCenterCoordForPosition(ballGridPos);
+        Debug.Log($"Snap Ball to grid: posAt={transform.position}, posSnapTo={gridCoordForBall}, gridPos={ballGridPos}");
+        transform.position = gridCoordForBall;
+    }
+
+    void NotifyBallPlayed()
+    {
+        // notify dropper
+        BallShooter ballShooterScript = ballShooterObj.GetComponent<BallShooter>();
+        ballShooterScript.BallDropDone();
+
+        // also mark ball in grid
+        gridPosScript.MarkBallInGrid(ballGridPos, myId, gameObject);
+        // and pop balls if needed
+        gridPosScript.CheckAndPopBalls(myId, ballGridPos);
+    }
+
 }

@@ -231,7 +231,7 @@ public class GridPositions : MonoBehaviour
         }
     }
 
-    public void ClearBallInGrid(Vector2Int posInGrid)
+    void ClearBallInGrid(Vector2Int posInGrid)
     {
         if (!IsPosWithinGrid(posInGrid)) {
             Debug.LogWarning($"ClearBallInGrid() - ignoring call w/ invalid posInGrid={posInGrid}");
@@ -342,7 +342,7 @@ public class GridPositions : MonoBehaviour
     //      NOTE: either way, mark cloned-grid, to indicate we've checked that position
     // 3. with 2. should have done depth-first search to all adjacently connected positions
     // 4. if list.length > MIN_NUM_CONNECTED_TO_POP, then okay to pop the chain
-    public List<Vector2Int> CheckForChainedIds(int checkForId, Vector2Int checkFromPos)
+    List<Vector2Int> CheckForChainedIds(int checkForId, Vector2Int checkFromPos)
     {
         // clone of id grid, to mark when walking neighbors
         int[,] gridBallIdsCloneToMark = (int[,])gridBallIds.Clone();
@@ -397,6 +397,15 @@ public class GridPositions : MonoBehaviour
         }
 
         return bMatch;
+    }
+
+    public void CheckAndPopBalls(int ballId, Vector2Int ballGridPos)
+    {
+        // and check if it causes any clearing, for that color, from that position
+        var ballPosListToPop = CheckForChainedIds(ballId, ballGridPos);
+        foreach (var popBallPos in ballPosListToPop) {
+            ClearBallInGrid(popBallPos);
+        }
     }
 
 }
