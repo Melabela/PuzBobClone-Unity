@@ -7,7 +7,6 @@ public class BallInfo : MonoBehaviour
     static int BALL_MIN_ID = 1;  // inclusive
     static int BALL_MAX_ID = 6;  // inclusive
 
-    static float MASS_STOPPED_BALL = 1000f;
     static float BALL_COLLIDE_MAX_DIFF_FROM_FORWARD_ANGLE = 60f;
 
     static List<string> ballIndexToColorName = new List<string>()
@@ -178,8 +177,9 @@ public class BallInfo : MonoBehaviour
         // stop movement & forces
         myRb.velocity = Vector3.zero;
         myRb.constraints |= RigidbodyConstraints.FreezePosition;
-        // increase mass to stop movement from future collisions
-        myRb.mass = MASS_STOPPED_BALL;
+        // change RigidBody to kinematic, removes it from future physics-based movement (i.e. collisions)
+        // https://docs.unity3d.com/2021.3/Documentation/Manual/RigidbodiesOverview.html
+        myRb.isKinematic = true;
     }
 
     void SnapBallToPositionInGrid()
