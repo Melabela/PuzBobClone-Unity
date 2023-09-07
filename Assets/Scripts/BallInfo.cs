@@ -8,6 +8,7 @@ public class BallInfo : MonoBehaviour
     static int BALL_MAX_ID = 6;  // inclusive
 
     static float MASS_STOPPED_BALL = 1000f;
+    static float BALL_COLLIDE_MAX_DIFF_FROM_FORWARD_ANGLE = 60f;
 
     static List<string> ballIndexToColorName = new List<string>()
     {
@@ -63,11 +64,6 @@ public class BallInfo : MonoBehaviour
     {
     }
 
-    public int GetId()
-    {
-        return myId;
-    }
-
     // FixedUpdate is called every physics step
     // REF: https://gamedev.stackexchange.com/a/197366
     void FixedUpdate()
@@ -76,7 +72,18 @@ public class BallInfo : MonoBehaviour
         // collision has already occurred, and lost previous motion
         if (bDetectCollision) {
             lastVelocity = myRb.velocity;
+
+            // 3. IF any-time, motion incorrectly goes upwards
+            if (myRb.velocity.y > 0) {
+                Debug.Log($"FixedUpdate(), w/ bDetectCollision - myRb.velocity.y={myRb.velocity.y}");
+                StopActiveBall();
+            }
         }
+    }
+
+    public int GetId()
+    {
+        return myId;
     }
 
     void UpdateColor()
@@ -123,11 +130,40 @@ public class BallInfo : MonoBehaviour
             bStopThisBall = true;
         }
         else if (otherObj.CompareTag("PlayedBall")) {
-            bStopThisBall = true;
+            // 1. avoid immediate snapping, e.g. if contacted ball is "to the side"
+            // - check relative position of collider ball
+            // - if angle too far from current "forward", then ignore
+            // - (if there IS ball forward, that should trigger separate call to OnCollisionEnter())
+            Vector3 ballGoFwdDir = lastVelocity;
+            Debug.Log($"OnCollisionEnter(), w/ PlayedBall - lastVelocity={lastVelocity}");
+
+            Vector3 ballCollidedWithDir = otherObj.transform.position - transform.position;
+            float diffAngle = Vector3.Angle(ballGoFwdDir, ballCollidedWithDir);
+            Debug.Log($"OnCollisionEnter(), w/ PlayedBall - diffAngle={diffAngle}");
+            if (diffAngle <= BALL_COLLIDE_MAX_DIFF_FROM_FORWARD_ANGLE) {
+                // Vector3.Angle() returns smallest positive angle
+                // so this should account for +/- 60deg, from forward-dir
+                bStopThisBall = true;
+            }
+
+            // 2. DO STOP, if continuing "forward" encounters a ball
+            Vector3 ballFutureFwdPos = transform.position + (ballGoFwdDir.normalized * 0.7f);
+            Vector2Int futureFwdGridPos = gridPosScript.GetClosestPositionForCenterCoord(ballFutureFwdPos);
+            Debug.Log($"OnCollisionEnter(), w/ PlayedBall - futureFwdGridPos={futureFwdGridPos}");
+            if (gridPosScript.HasBallInGrid(futureFwdGridPos)) {
+                bStopThisBall = true;
+            }
         }
 
         // only stop on contact w/ objects of above two types
         if (bStopThisBall) {
+            StopActiveBall();
+        }
+    }
+
+    void StopActiveBall()
+    {
+        if (CompareTag("ActiveBall")) {
             StopBallMovement();
             SnapBallToPositionInGrid();
             NotifyBallPlayed();

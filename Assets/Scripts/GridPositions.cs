@@ -231,6 +231,16 @@ public class GridPositions : MonoBehaviour
         }
     }
 
+    public bool HasBallInGrid(Vector2Int posInGrid)
+    {
+        if (!IsPosWithinGrid(posInGrid)) {
+            Debug.LogWarning($"HasBallInGrid() - ignoring call w/ invalid posInGrid={posInGrid}");
+            return false;
+        }
+
+        return gridBallIds[posInGrid.x, posInGrid.y] > 0;
+    }
+
     void ClearBallInGrid(Vector2Int posInGrid)
     {
         if (!IsPosWithinGrid(posInGrid)) {
