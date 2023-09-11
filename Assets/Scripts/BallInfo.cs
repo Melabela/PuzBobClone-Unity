@@ -134,9 +134,9 @@ public class BallInfo : MonoBehaviour
             // - if angle too far from current "forward", then ignore
             // - (if there IS ball forward, that should trigger separate call to OnCollisionEnter())
             Vector3 ballGoFwdDir = lastVelocity;
-            Debug.Log($"OnCollisionEnter(), w/ PlayedBall - lastVelocity={lastVelocity}");
-
             Vector3 ballCollidedWithDir = otherObj.transform.position - transform.position;
+            Debug.Log($"OnCollisionEnter(), w/ PlayedBall - ballGoFwdDir={ballGoFwdDir}, ballCollidedWithDir={ballCollidedWithDir}");
+
             float diffAngle = Vector3.Angle(ballGoFwdDir, ballCollidedWithDir);
             Debug.Log($"OnCollisionEnter(), w/ PlayedBall - diffAngle={diffAngle}");
             if (diffAngle <= BALL_COLLIDE_MAX_DIFF_FROM_FORWARD_ANGLE) {
