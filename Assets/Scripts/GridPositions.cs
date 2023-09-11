@@ -42,6 +42,10 @@ public class GridPositions : MonoBehaviour
     int[,] gridBallIds;
     GameObject[,] gridBallObjs;
 
+    // track ball counts by id, for gameplay...
+    //  if player has cleared all of one color, don't give them balls of that color to shoot
+    int[] ballCountById;  // e.g. index[1] = count_of_red
+
     // Start is called before the first frame update
     void Start()
     {
@@ -72,6 +76,9 @@ public class GridPositions : MonoBehaviour
         maxAllowedXPos = (GRID_COLS - 1) * 2;  // e.g. 8 cols -> x==14
         gridBallIds = new int[maxAllowedXPos + 1, GRID_ROWS];
         gridBallObjs = new GameObject[maxAllowedXPos + 1, GRID_ROWS];
+
+        ballCountById = new int[BallInfo.BALL_MAX_ID + 1];
+        Array.Clear(ballCountById, 0, ballCountById.Length);
     }
 
     bool IsOdd(int n)
@@ -264,11 +271,15 @@ public class GridPositions : MonoBehaviour
         }
 
         var ballIdAtPos = gridBallIds[posInGrid.x, posInGrid.y];
-        if (ballIdAtPos > 0) {
+        if ( (ballIdAtPos >= BallInfo.BALL_MIN_ID) &&
+             (ballIdAtPos <= BallInfo.BALL_MAX_ID) ) {
             var ballObjAtPos = gridBallObjs[posInGrid.x, posInGrid.y];
             if (ballObjAtPos) {
                 Destroy(ballObjAtPos);
             }
+
+            // update count tracking by ballId
+            ballCountById[ballIdAtPos]--;
 
             // Debug.Log($"ClearBallInGrid() called w/ posInGrid={posInGrid}");
             gridBallIds[posInGrid.x, posInGrid.y] = 0;
@@ -283,9 +294,14 @@ public class GridPositions : MonoBehaviour
             return;  // exit early
         }
 
-        // Debug.Log($"MarkBallInGrid() called w/ posInGrid={posInGrid}, ballId={ballId}, ballObj={ballObj}");
-        gridBallIds[posInGrid.x, posInGrid.y] = ballId;
-        gridBallObjs[posInGrid.x, posInGrid.y] = ballObj;
+        if ( (ballId >= BallInfo.BALL_MIN_ID) &&
+             (ballId <= BallInfo.BALL_MAX_ID) &&
+             (ballObj != null) ) {
+            // Debug.Log($"MarkBallInGrid() called w/ posInGrid={posInGrid}, ballId={ballId}, ballObj={ballObj}");
+            ballCountById[ballId]++;
+            gridBallIds[posInGrid.x, posInGrid.y] = ballId;
+            gridBallObjs[posInGrid.x, posInGrid.y] = ballObj;
+        }
 
         // DEBUG ONLY!
         // string gridDebug = ShowBallIdsInGrid();
@@ -434,6 +450,8 @@ public class GridPositions : MonoBehaviour
     }
 
     // return count, by ballIds, e.g. index[1] = count_of_red
+    // - SLOW METHOD, works by reading all spots in grid.
+    // - INSTEAD use class variable 'ballCountById' - updated when balls are marked/cleared
     int[] ReadGridForBallCountById()
     {
         int[] countById = new int[BallInfo.BALL_MAX_ID + 1];
