@@ -201,10 +201,11 @@ public class GridPositions : MonoBehaviour
         return nearestPos;
     }
 
-    void FillGridWithBalls(int rowsToFill)
+    Vector2Int[] GenerateAllGridPosList()
     {
-        int maxY = Math.Min(GRID_ROWS, rowsToFill);
-        for (int y = 0; y < maxY; y++)
+        List<Vector2Int> allGridPosList = new List<Vector2Int>();
+
+        for (int y = 0; y < GRID_ROWS; y++)
         {
             bool bIsRowOdd = IsOdd(y);
 
@@ -216,13 +217,27 @@ public class GridPositions : MonoBehaviour
                 int realXPos = (xBall * 2) + (bIsRowOdd ? 1 : 0);
 
                 Vector2Int ballPosn = new Vector2Int(realXPos, y);
+                allGridPosList.Add(ballPosn);
+            }
+        }
+
+        return allGridPosList.ToArray();
+    }
+
+    void FillGridWithBalls(int rowsToFill)
+    {
+        Vector2Int[] allGridPos = GenerateAllGridPosList();
+        foreach (var grPos in allGridPos)
+        {
+            if (grPos.y < rowsToFill) {
+                Vector2Int ballPosn = new Vector2Int(grPos.x, grPos.y);
                 Vector3 ballCoords = GetCenterCoordForPosition(ballPosn);
                 // Debug.Log($"Pos x,y=({realXPos}, {y})");
                 // Debug.Log($"Coord x,y=({ballCoords.x}, {ballCoords.y})");
 
                 GameObject newBall = Instantiate(ballPrefab, ballCoords,
                                             ballPrefab.transform.rotation);
-                newBall.name += $"_{realXPos},{y}";  // append (x,y) pos to name for identification
+                newBall.name += $"_{grPos.x},{grPos.y}";  // append (x,y) pos to name for identification
 
                 // mark ball on map
                 int ballId = newBall.GetComponent<BallInfo>().GetId();
@@ -418,4 +433,21 @@ public class GridPositions : MonoBehaviour
         }
     }
 
+    // return count, by ballIds, e.g. index[1] = count_of_red
+    int[] ReadGridForBallCountById()
+    {
+        int[] countById = new int[BallInfo.BALL_MAX_ID + 1];
+        Array.Clear(countById, 0, countById.Length);  // init all indicies to zero
+
+        Vector2Int[] allGridPos = GenerateAllGridPosList();
+        foreach (var grPos in allGridPos) {
+            int ballIdAtPos = gridBallIds[grPos.x, grPos.y];
+            if ( (ballIdAtPos >= BallInfo.BALL_MIN_ID) &&
+                 (ballIdAtPos <= BallInfo.BALL_MAX_ID) ) {
+                countById[ballIdAtPos]++;
+            }
+        }
+
+        return countById;
+    }
 }

@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class BallInfo : MonoBehaviour
 {
-    static int BALL_MIN_ID = 1;  // inclusive
-    static int BALL_MAX_ID = 6;  // inclusive
+    static public int BALL_MIN_ID = 1;  // inclusive
+    static public int BALL_MAX_ID = 6;  // inclusive
 
     static float BALL_COLLIDE_MAX_DIFF_FROM_FORWARD_ANGLE = 60f;
 
