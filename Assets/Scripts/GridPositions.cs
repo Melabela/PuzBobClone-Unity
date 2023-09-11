@@ -361,11 +361,11 @@ public class GridPositions : MonoBehaviour
 
         FindIdAtGridPosAndNeighbors(checkForId, checkFromPos,
                                     ref gridBallIdsCloneToMark, matchingPositions);
-        Debug.Log($"CheckForChainedIds() - recursive check done from {checkFromPos}, id={checkForId}... got {matchingPositions.Count} matches");
-        if (matchingPositions.Count > 1) {
-            string debugStrMatchPos = string.Join(", ", matchingPositions.ConvertAll(pos => pos.ToString()).ToArray());
-            Debug.Log($"CheckForChainedIds() - matchingPositions=[{debugStrMatchPos}]");
-        }
+        // Debug.Log($"CheckForChainedIds() - recursive check done from {checkFromPos}, id={checkForId}... got {matchingPositions.Count} matches");
+        // if (matchingPositions.Count > 1) {
+        //     string debugStrMatchPos = string.Join(", ", matchingPositions.ConvertAll(pos => pos.ToString()).ToArray());
+        //     Debug.Log($"CheckForChainedIds() - matchingPositions=[{debugStrMatchPos}]");
+        // }
 
         if (matchingPositions.Count >= MIN_CONNECTED_BALLS_FOR_POP) {
             // return positions only if >= minimum_count required

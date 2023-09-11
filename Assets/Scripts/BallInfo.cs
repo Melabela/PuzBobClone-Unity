@@ -74,7 +74,7 @@ public class BallInfo : MonoBehaviour
 
             // 3. IF any-time, motion incorrectly goes upwards
             if (myRb.velocity.y > 0) {
-                Debug.Log($"FixedUpdate(), w/ bDetectCollision - myRb.velocity.y={myRb.velocity.y}");
+                // Debug.Log($"FixedUpdate(), w/ bDetectCollision - myRb.velocity.y={myRb.velocity.y}");
                 StopActiveBall();
             }
         }
@@ -135,10 +135,10 @@ public class BallInfo : MonoBehaviour
             // - (if there IS ball forward, that should trigger separate call to OnCollisionEnter())
             Vector3 ballGoFwdDir = lastVelocity;
             Vector3 ballCollidedWithDir = otherObj.transform.position - transform.position;
-            Debug.Log($"OnCollisionEnter(), w/ PlayedBall - ballGoFwdDir={ballGoFwdDir}, ballCollidedWithDir={ballCollidedWithDir}");
+            // Debug.Log($"OnCollisionEnter(), w/ PlayedBall - ballGoFwdDir={ballGoFwdDir}, ballCollidedWithDir={ballCollidedWithDir}");
 
             float diffAngle = Vector3.Angle(ballGoFwdDir, ballCollidedWithDir);
-            Debug.Log($"OnCollisionEnter(), w/ PlayedBall - diffAngle={diffAngle}");
+            // Debug.Log($"OnCollisionEnter(), w/ PlayedBall - diffAngle={diffAngle}");
             if (diffAngle <= BALL_COLLIDE_MAX_DIFF_FROM_FORWARD_ANGLE) {
                 // Vector3.Angle() returns smallest positive angle
                 // so this should account for +/- 60deg, from forward-dir
