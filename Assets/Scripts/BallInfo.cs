@@ -144,14 +144,6 @@ public class BallInfo : MonoBehaviour
                 // so this should account for +/- 60deg, from forward-dir
                 bStopThisBall = true;
             }
-
-            // 2. DO STOP, if continuing "forward" encounters a ball
-            Vector3 ballFutureFwdPos = transform.position + (ballGoFwdDir.normalized * 0.7f);
-            Vector2Int futureFwdGridPos = gridPosScript.GetClosestPositionForCenterCoord(ballFutureFwdPos);
-            Debug.Log($"OnCollisionEnter(), w/ PlayedBall - futureFwdGridPos={futureFwdGridPos}");
-            if (gridPosScript.HasBallInGrid(futureFwdGridPos)) {
-                bStopThisBall = true;
-            }
         }
 
         // only stop on contact w/ objects of above two types
