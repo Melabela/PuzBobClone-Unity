@@ -413,7 +413,7 @@ public class GridPositions : MonoBehaviour
                                      List<Vector2Int> matchPositions)  // store of found positions
     {
         // check id at thisPos
-        int idAtPos = gridBallIds[thisPos.x, thisPos.y];
+        int idAtPos = gridBallIdsToMark[thisPos.x, thisPos.y];
         bool bMatch = idAtPos == checkForId;
 
         // mark off current position, either way
@@ -428,9 +428,9 @@ public class GridPositions : MonoBehaviour
             var neighborPositions = GetNeighboringPositions(thisPos);
             // recursively call neighbor positions that are left
             foreach (var neighbPos in neighborPositions) {
-                // ignore already walked neighbors positions (-1),
-                //  to avoid repeat checks or going into cycles
-                if (gridBallIdsToMark[neighbPos.x, neighbPos.y] >= 0) {
+                // ignore already walked neighbors positions (id == -1), to avoid repeat checks
+                // also skip empty spots (id == 0) to save a few calls
+                if (gridBallIdsToMark[neighbPos.x, neighbPos.y] > 0) {
                     FindIdAtGridPosAndNeighbors(checkForId, neighbPos,
                                                 ref gridBallIdsToMark, matchPositions);
                 }
