@@ -4,12 +4,13 @@ using UnityEngine;
 
 public class BallInfo : MonoBehaviour
 {
-    static public int BALL_MIN_ID = 1;  // inclusive
-    static public int BALL_MAX_ID = 6;  // inclusive
+    // ID zero (0) intentionally NOT used, keep that to identify empty spot
+    static readonly public int BALL_MIN_ID = 1;  // inclusive
+    static readonly public int BALL_MAX_ID = 6;  // inclusive
 
-    static float BALL_COLLIDE_MAX_DIFF_FROM_FORWARD_ANGLE = 60f;
+    static readonly float BALL_COLLIDE_MAX_DIFF_FROM_FORWARD_ANGLE = 60f;
 
-    static List<string> ballIndexToColorName = new List<string>()
+    static readonly List<string> ballIndexToColorName = new List<string>()
     {
         "",       // [0]
         "red",    // [1]
@@ -20,7 +21,7 @@ public class BallInfo : MonoBehaviour
         "purple"  // [6]
     };
 
-    static Dictionary<string, string> ballColorNameToMaterialName = new Dictionary<string, string>()
+    static readonly Dictionary<string, string> ballColorNameToMaterialName = new Dictionary<string, string>()
     {
         ["red"]    = "Materials/BallRed",
         ["orange"] = "Materials/BallOrange",
