@@ -45,13 +45,20 @@ public class GridPositions : MonoBehaviour
     // track ball counts by id, for gameplay...
     //  if player has cleared all of one color, don't give them balls of that color to shoot
     int[] ballCountById;  // e.g. index[1] = count_of_red
+    int ballCountInGrid;  // e.g. 5 balls on field
+
+    bool bInitStage;
 
     // Start is called before the first frame update
     void Start()
     {
         GridUnitInit();
         GridStorageInit();
+        BallCountersInit();
+
+        bInitStage = true;
         FillGridWithBalls(3);
+        bInitStage = false;
     }
 
     // Update is called once per frame
@@ -76,9 +83,13 @@ public class GridPositions : MonoBehaviour
         maxAllowedXPos = (GRID_COLS - 1) * 2;  // e.g. 8 cols -> x==14
         gridBallIds = new int[maxAllowedXPos + 1, GRID_ROWS];
         gridBallObjs = new GameObject[maxAllowedXPos + 1, GRID_ROWS];
+    }
 
+    void BallCountersInit()
+    {
         ballCountById = new int[BallInfo.BALL_MAX_ID + 1];
         Array.Clear(ballCountById, 0, ballCountById.Length);
+        ballCountInGrid = 0;
     }
 
     bool IsOdd(int n)
@@ -278,8 +289,9 @@ public class GridPositions : MonoBehaviour
                 Destroy(ballObjAtPos);
             }
 
-            // update count tracking by ballId
+            // update ball count tracking
             ballCountById[ballIdAtPos]--;
+            ballCountInGrid--;
 
             // Debug.Log($"ClearBallInGrid() called w/ posInGrid={posInGrid}");
             gridBallIds[posInGrid.x, posInGrid.y] = 0;
@@ -297,8 +309,11 @@ public class GridPositions : MonoBehaviour
         if ( (ballId >= BallInfo.BALL_MIN_ID) &&
              (ballId <= BallInfo.BALL_MAX_ID) &&
              (ballObj != null) ) {
-            // Debug.Log($"MarkBallInGrid() called w/ posInGrid={posInGrid}, ballId={ballId}, ballObj={ballObj}");
+            // update ball count tracking
             ballCountById[ballId]++;
+            ballCountInGrid++;
+
+            // Debug.Log($"MarkBallInGrid() called w/ posInGrid={posInGrid}, ballId={ballId}, ballObj={ballObj}");
             gridBallIds[posInGrid.x, posInGrid.y] = ballId;
             gridBallObjs[posInGrid.x, posInGrid.y] = ballObj;
         }
@@ -467,4 +482,26 @@ public class GridPositions : MonoBehaviour
 
         return countById;
     }
+
+    // returns true/false array by ID
+    public bool[] GetAllowedBallIds()
+    {
+        bool[] allowedBallIds = new bool[BallInfo.BALL_MAX_ID + 1];
+
+        for (int i = BallInfo.BALL_MIN_ID; i <= BallInfo.BALL_MAX_ID; i++) {
+            if (bInitStage || (ballCountInGrid == 0)) {
+                // stage being setup, ignore color counts on grid
+                allowedBallIds[i] = true;  // all ids/colors allowed
+            }
+            else {
+                // normal behavior, check color counts on grid
+                // - disallow color/id, if player has cleared that one
+                // - i.e. allow if only still on play-field
+                allowedBallIds[i] = (ballCountById[i] > 0);
+            }
+        }
+
+        return allowedBallIds;
+    }
+
 }

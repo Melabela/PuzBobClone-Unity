@@ -51,9 +51,9 @@ public class BallInfo : MonoBehaviour
 
         myRb = GetComponent<Rigidbody>();
 
-        myId = Random.Range(BALL_MIN_ID, BALL_MAX_ID + 1);
-        // Debug.Log($"BallInfo.Start() - myId={myId}");
-        UpdateColor();
+        int ballId = ChooseId();
+        // Debug.Log($"BallInfo.Start() - ballId={ballId}");
+        UpdateColor(ballId);
 
         bDetectCollision = true;
         tag = "ActiveBall";
@@ -86,11 +86,24 @@ public class BallInfo : MonoBehaviour
         return myId;
     }
 
-    void UpdateColor()
+    int ChooseId()
     {
-        if ((myId >= BALL_MIN_ID) && (myId <= BALL_MAX_ID))
+        bool[] allowedBallIds = gridPosScript.GetAllowedBallIds();
+        int randId;
+
+        do {
+            randId = Random.Range(BALL_MIN_ID, BALL_MAX_ID + 1);
+        } while (!allowedBallIds[randId]);
+
+        return randId;
+    }
+
+    void UpdateColor(int colorId)
+    {
+        if ((colorId >= BALL_MIN_ID) && (colorId <= BALL_MAX_ID))
         {
             // active state
+            myId = colorId;
             var color_name = ballIndexToColorName[myId];
             var material_name = ballColorNameToMaterialName[color_name];
             var color_material = Resources.Load<Material>(material_name);
