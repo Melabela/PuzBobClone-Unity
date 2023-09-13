@@ -428,9 +428,8 @@ public class GridPositions : MonoBehaviour
             var neighborPositions = GetNeighboringPositions(thisPos);
             // recursively call neighbor positions that are left
             foreach (var neighbPos in neighborPositions) {
-                // ignore already walked neighbors positions (id == -1), to avoid repeat checks
-                // also skip empty spots (id == 0) to save a few calls
-                if (gridBallIdsToMark[neighbPos.x, neighbPos.y] > 0) {
+                // minimize calls - only call recursively on spots with same id as we're looking for
+                if (gridBallIdsToMark[neighbPos.x, neighbPos.y] == checkForId) {
                     FindIdAtGridPosAndNeighbors(checkForId, neighbPos,
                                                 ref gridBallIdsToMark, matchPositions);
                 }
