@@ -2,7 +2,7 @@ using System;  // for Math
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;  // for StringBuilder
-using System.Linq;
+using System.Linq;  // for [List].Where()
 using UnityEngine;
 
 /****
@@ -22,7 +22,7 @@ using UnityEngine;
 public class GridPositions : MonoBehaviour
 {
     // -- exposed & configurable variables --
-    [SerializeField] int GRID_ROWS;
+    [SerializeField] public int GRID_ROWS;
     [SerializeField] int GRID_COLS;
     [SerializeField] float GRID_UNIT_SIZE;  // diameter
     // z-coordinate to use, when moving between gridPos -> 3d-coords
@@ -119,7 +119,9 @@ public class GridPositions : MonoBehaviour
         return coords;
     }
 
-    public Vector2Int GetClosestPositionForCenterCoord(Vector3 coord)
+    // "absolute" = return closest computed gridPos, without any checks
+    // - returned position may be *outside* of allowed Grid...
+    public Vector2Int GetClosestPositionForCenterCoordAbsolute(Vector3 coord)
     {
         // ignore Z-coord.
         // reverse calculations in above fn
@@ -148,14 +150,21 @@ public class GridPositions : MonoBehaviour
         }
 
         Vector2Int pos = new Vector2Int(ipX, ipY);
+        return pos;
+    }
+
+    // "safe" = ensures returned pos is within grid
+    public Vector2Int GetClosestPositionForCenterCoordSafe(Vector3 coord)
+    {
+        Vector2Int rawPos = GetClosestPositionForCenterCoordAbsolute(coord);
 
         // additional check... closest position at edge maybe outside grid
         //  (esp. for odd rows)
-        if (!IsPosWithinGrid(pos)) {
-            pos = GetNearestValidPositionForCoord(pos, coord);
+        if (IsPosWithinGrid(rawPos)) {
+            return rawPos;
+        } else {
+            return GetNearestValidPositionForCoord(rawPos, coord);
         }
-
-        return pos;
     }
 
     bool IsPosWithinGrid(Vector2Int pos)

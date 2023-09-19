@@ -46,8 +46,7 @@ public class BallInfo : MonoBehaviour
     void Start()
     {
         ballShooterObj = GameObject.Find("BallShooter");
-        GameObject gridObj = GameObject.Find("Grid");
-        gridPosScript = gridObj.GetComponent<GridPositions>();
+        gridPosScript = GameObject.Find("Grid").GetComponent<GridPositions>();
 
         myRb = GetComponent<Rigidbody>();
 
@@ -170,8 +169,13 @@ public class BallInfo : MonoBehaviour
     {
         if (CompareTag("ActiveBall")) {
             StopBallMovement();
-            SnapBallToPositionInGrid();
-            NotifyBallPlayed();
+            var bOverTop = SnapBallToPositionInGrid();
+            if (!bOverTop) {
+                NotifyBallPlayed();
+            } else {
+                // TODO: add more here!
+                Debug.LogWarning("StopActiveBall: bOverTop - game end!");
+            }
         }
     }
 
@@ -188,13 +192,23 @@ public class BallInfo : MonoBehaviour
         myRb.isKinematic = true;
     }
 
-    void SnapBallToPositionInGrid()
+    bool SnapBallToPositionInGrid()
     {
-        // snap position to closest in grid
-        ballGridPos = gridPosScript.GetClosestPositionForCenterCoord(transform.position);
+        var rawGridPos = gridPosScript.GetClosestPositionForCenterCoordAbsolute(transform.position);
+        bool bOverTop = rawGridPos.y >= gridPosScript.GRID_ROWS;
+
+        if (bOverTop) {
+            ballGridPos = rawGridPos;
+        } else {
+            // call again, and get position ensured in grid
+            ballGridPos = gridPosScript.GetClosestPositionForCenterCoordSafe(transform.position);
+        }
+
         Vector3 gridCoordForBall = gridPosScript.GetCenterCoordForPosition(ballGridPos);
-        Debug.Log($"Snap Ball to grid: posAt={transform.position}, posSnapTo={gridCoordForBall}, gridPos={ballGridPos}");
+        Debug.Log($"SnapBallToPositionInGrid: bOverTop={bOverTop}, gridPos={ballGridPos}, posSnapTo={gridCoordForBall}");
         transform.position = gridCoordForBall;
+
+        return bOverTop;
     }
 
     void NotifyBallPlayed()
