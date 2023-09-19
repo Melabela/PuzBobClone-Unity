@@ -618,4 +618,9 @@ public class GridPositions : MonoBehaviour
         return allowedBallIds;
     }
 
+    public int GetBallCountInGrid()
+    {
+        return ballCountInGrid;
+    }
+
 }

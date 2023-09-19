@@ -171,7 +171,14 @@ public class BallInfo : MonoBehaviour
             StopBallMovement();
             var bOverTop = SnapBallToPositionInGrid();
             if (!bOverTop) {
-                NotifyBallPlayed();
+                var bCleared = MarkBallAndCheckPop();
+                if (!bCleared) {
+                    // load new ball into shooter
+                    NotifyBallPlayed();
+                } else {
+                    // TODO: add more here!
+                    Debug.LogWarning("StopActiveBall: bCleared - game cleared!");
+                }
             } else {
                 // TODO: add more here!
                 Debug.LogWarning("StopActiveBall: bOverTop - game end!");
@@ -211,16 +218,22 @@ public class BallInfo : MonoBehaviour
         return bOverTop;
     }
 
+    bool MarkBallAndCheckPop()
+    {
+        // also mark ball in grid
+        gridPosScript.MarkBallInGrid(ballGridPos, myId, gameObject);
+        // and pop balls if needed
+        gridPosScript.CheckAndPopBalls(myId, ballGridPos);
+
+        // is field cleared, after (possibly) popping balls
+        return gridPosScript.GetBallCountInGrid() == 0;
+    }
+
     void NotifyBallPlayed()
     {
         // notify shooter
         BallShooter ballShooterScript = ballShooterObj.GetComponent<BallShooter>();
         ballShooterScript.BallShotDone();
-
-        // also mark ball in grid
-        gridPosScript.MarkBallInGrid(ballGridPos, myId, gameObject);
-        // and pop balls if needed
-        gridPosScript.CheckAndPopBalls(myId, ballGridPos);
     }
 
 }
