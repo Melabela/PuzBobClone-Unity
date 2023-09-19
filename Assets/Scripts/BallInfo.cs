@@ -32,7 +32,8 @@ public class BallInfo : MonoBehaviour
     };
 
     // other object references
-    GameObject ballShooterObj;
+    GameManager gameManagerScript;
+    BallShooter ballShooterScript;
     GridPositions gridPosScript;
 
     // internal vars / state
@@ -45,7 +46,8 @@ public class BallInfo : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        ballShooterObj = GameObject.Find("BallShooter");
+        gameManagerScript = GameObject.Find("GameManager").GetComponent<GameManager>();
+        ballShooterScript = GameObject.Find("BallShooter").GetComponent<BallShooter>();
         gridPosScript = GameObject.Find("Grid").GetComponent<GridPositions>();
 
         myRb = GetComponent<Rigidbody>();
@@ -176,12 +178,12 @@ public class BallInfo : MonoBehaviour
                     // load new ball into shooter
                     NotifyBallPlayed();
                 } else {
-                    // TODO: add more here!
                     Debug.LogWarning("StopActiveBall: bCleared - game cleared!");
+                    gameManagerScript.ShowGameClearText(true);
                 }
             } else {
-                // TODO: add more here!
                 Debug.LogWarning("StopActiveBall: bOverTop - game end!");
+                gameManagerScript.ShowGameOverText(true);
             }
         }
     }
@@ -232,7 +234,6 @@ public class BallInfo : MonoBehaviour
     void NotifyBallPlayed()
     {
         // notify shooter
-        BallShooter ballShooterScript = ballShooterObj.GetComponent<BallShooter>();
         ballShooterScript.BallShotDone();
     }
 
