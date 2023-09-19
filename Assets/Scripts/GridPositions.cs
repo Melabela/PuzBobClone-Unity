@@ -48,6 +48,7 @@ public class GridPositions : MonoBehaviour
     int ballCountInGrid;  // e.g. 5 balls on field
 
     bool bInitStage;
+    long nFrames;
 
     // Start is called before the first frame update
     void Start()
@@ -58,12 +59,17 @@ public class GridPositions : MonoBehaviour
 
         bInitStage = true;
         FillGridWithBalls(3);
-        bInitStage = false;
     }
 
     // Update is called once per frame
     void Update()
     {
+        nFrames++;
+        // turn off on 3rd frame
+        // - block ball collisions from init placement from clearing
+        if (bInitStage && (nFrames >= 3)) {
+            bInitStage = false;
+        }
     }
 
     void GridUnitInit()
@@ -465,7 +471,12 @@ public class GridPositions : MonoBehaviour
 
     public void CheckAndPopBalls(int ballId, Vector2Int ballGridPos)
     {
-        // and check if it causes any clearing, for that color, from that position
+        // skip checks on level init
+        if (bInitStage) {
+            return;  // exit early
+        }
+
+        // check if it causes any clearing, for that color, from that position
         var ballPosListToPop = CheckForChainedIds(ballId, ballGridPos);
         foreach (var popBallPos in ballPosListToPop) {
             ClearBallInGrid(popBallPos);
