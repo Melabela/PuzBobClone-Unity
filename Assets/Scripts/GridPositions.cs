@@ -57,8 +57,7 @@ public class GridPositions : MonoBehaviour
         GridStorageInit();
         BallCountersInit();
 
-        bInitStage = true;
-        FillGridWithBalls(3);
+        InitStage();
     }
 
     // Update is called once per frame
@@ -257,26 +256,121 @@ public class GridPositions : MonoBehaviour
         return allGridPosList.ToArray();
     }
 
-    void FillGridWithBalls(int rowsToFill)
+    void InitStage()
+    {
+        bInitStage = true;
+
+        int nStageInit = UnityEngine.Random.Range(0, 10);
+        if (nStageInit < 3) {  // 30%
+            // flat rows at bottom
+            FillGridRowsWithBalls(3);
+        }
+        else if (nStageInit < 6) {  // 30%
+            // diamond'ish shape
+            FillGridInDiamondish();
+        }
+        else if (nStageInit < 10) {  // 40%
+            // "streamers", or vertical ribbons
+            FillGridWithStreamers();
+        }
+
+        // DON'T CLEAR bInitStage HERE
+        // - ball collisions trigger slightly after balls are instantiated,
+        //   so defer clearing this a few frames
+        // - see Update() fn instead
+    }
+
+    void CreateBallsAtPositions(Vector2Int[] ballGridPositions)
+    {
+        foreach (var grPos in ballGridPositions)
+        {
+            Vector2Int ballPosn = new Vector2Int(grPos.x, grPos.y);
+            Vector3 ballCoords = GetCenterCoordForPosition(ballPosn);
+            // Debug.Log($"Pos x,y=({realXPos}, {y})");
+            // Debug.Log($"Coord x,y=({ballCoords.x}, {ballCoords.y})");
+
+            GameObject newBall = Instantiate(ballPrefab, ballCoords,
+                                        ballPrefab.transform.rotation);
+            newBall.name += $"_{grPos.x},{grPos.y}";  // append (x,y) pos to name for identification
+
+            // mark ball on map
+            int ballId = newBall.GetComponent<BallInfo>().GetId();
+            MarkBallInGrid(ballPosn, ballId, newBall);
+        }
+    }
+
+    void FillGridRowsWithBalls(int rowsToFill)
     {
         Vector2Int[] allGridPos = GenerateAllGridPosList();
-        foreach (var grPos in allGridPos)
-        {
-            if (grPos.y < rowsToFill) {
-                Vector2Int ballPosn = new Vector2Int(grPos.x, grPos.y);
-                Vector3 ballCoords = GetCenterCoordForPosition(ballPosn);
-                // Debug.Log($"Pos x,y=({realXPos}, {y})");
-                // Debug.Log($"Coord x,y=({ballCoords.x}, {ballCoords.y})");
+        var lowerRowsPos = allGridPos.Where(grPos => grPos.y < rowsToFill).ToArray();
+        CreateBallsAtPositions(lowerRowsPos);
+    }
 
-                GameObject newBall = Instantiate(ballPrefab, ballCoords,
-                                            ballPrefab.transform.rotation);
-                newBall.name += $"_{grPos.x},{grPos.y}";  // append (x,y) pos to name for identification
+    void FillGridInDiamondish()
+    {
+        // balls centered per row, as much as possible
+        // row 6:  2 across       x x
+        // row 5:  3 across      x x x
+        // row 4:  4 across     x x x x
+        // row 3:  5 across    x x x x x
+        // row 2:  4 across     x x x x
+        // row 1:  3 across      x x x
+        // row 0:  2 across       x x
+    
+        // array indexed by row
+        int[] ballsPerRow = {2, 3, 4, 5, 4, 3, 2};
+        var listBallPos = new List<Vector2Int>();
 
-                // mark ball on map
-                int ballId = newBall.GetComponent<BallInfo>().GetId();
-                MarkBallInGrid(ballPosn, ballId, newBall);
+        for (int y=0; y<ballsPerRow.Length; y++) {
+            int ballsThisRow = ballsPerRow[y];
+
+            int xbSideGap = (GRID_COLS - ballsThisRow) / 2;
+            if (IsOdd(y)) {
+                // odd rows have one less position
+                xbSideGap = (GRID_COLS - 1 - ballsThisRow) / 2;
+            }
+
+            for (int xb=0; xb<ballsThisRow; xb++) {
+                int xgPos = (xbSideGap + xb) * 2;
+                if (IsOdd(y)) {
+                    xgPos += 1;
+                }
+                var thisPos = new Vector2Int(xgPos, y);
+                listBallPos.Add(thisPos);
             }
         }
+
+        CreateBallsAtPositions(listBallPos.ToArray());
+    }
+
+    void FillGridWithStreamers()
+    {
+        // something like this
+        // |   x   x  |
+        // |  x   x   |
+        // |   x   x  |
+        // |  x   x   |
+        int nCount = 2;
+        int nHeight = 7;
+        var listBallPos = new List<Vector2Int>();
+
+        // calc base x-positions
+        // GAP (B) GAP (B) GAP
+        int xbGap = (GRID_COLS - nCount) / (nCount + 1);
+        int xbStart = 0;
+        for (int x=1; x<=nCount; x++) {
+            xbStart += xbGap;  // ball count here (xb)
+            int xgPos = xbStart * 2;  // switch to double-wide grid-pos (xg)
+            for (int y=0; y<nHeight; y++) {
+                var thisPos = new Vector2Int(xgPos, y);
+                listBallPos.Add(thisPos);
+                // iterate upwards, while zig-zag'ing xgPos
+                xgPos += IsOdd(y) ? 1 : -1;
+            }
+            xbStart += 1;  // add ball-width for streamer in for(y)
+        }
+
+        CreateBallsAtPositions(listBallPos.ToArray());
     }
 
     public bool HasBallInGrid(Vector2Int posInGrid)
