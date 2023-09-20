@@ -14,6 +14,7 @@ public class GameManager : MonoBehaviour
 
     int nBallsPlayed;
     int nBallsPopped;
+    long nFrames;
 
     // Start is called before the first frame update
     void Start()
@@ -25,7 +26,8 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetButton("Cancel")) {
+        nFrames++;
+        if (Input.GetButton("Cancel") && (nFrames >= 60)) {
             // reload scene
             string currSceneName = SceneManager.GetActiveScene().name;
             SceneManager.LoadScene(currSceneName);

@@ -58,6 +58,7 @@ public class GridPositions : MonoBehaviour
         BallCountersInit();
 
         nFrames = 0;
+        bInitStage = true;
         InitStage();
     }
 
@@ -65,9 +66,9 @@ public class GridPositions : MonoBehaviour
     void Update()
     {
         nFrames++;
-        // turn off on 3rd frame
+        // turn off on 6th frame
         // - block ball collisions from init placement from clearing
-        if (bInitStage && (nFrames >= 3)) {
+        if (bInitStage && (nFrames >= 6)) {
             bInitStage = false;
         }
     }
@@ -259,8 +260,6 @@ public class GridPositions : MonoBehaviour
 
     void InitStage()
     {
-        bInitStage = true;
-
         int nStageInit = UnityEngine.Random.Range(0, 10);
         if (nStageInit < 3) {  // 30%
             // flat rows at bottom
