@@ -57,6 +57,7 @@ public class GridPositions : MonoBehaviour
         GridStorageInit();
         BallCountersInit();
 
+        nFrames = 0;
         InitStage();
     }
 
@@ -563,11 +564,11 @@ public class GridPositions : MonoBehaviour
         return bMatch;
     }
 
-    public void CheckAndPopBalls(int ballId, Vector2Int ballGridPos)
+    public int CheckAndPopBalls(int ballId, Vector2Int ballGridPos)
     {
         // skip checks on level init
         if (bInitStage) {
-            return;  // exit early
+            return 0;  // exit early
         }
 
         // check if it causes any clearing, for that color, from that position
@@ -575,6 +576,7 @@ public class GridPositions : MonoBehaviour
         foreach (var popBallPos in ballPosListToPop) {
             ClearBallInGrid(popBallPos);
         }
+        return ballPosListToPop.Count;
     }
 
     // return count, by ballIds, e.g. index[1] = count_of_red

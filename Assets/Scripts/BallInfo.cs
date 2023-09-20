@@ -225,7 +225,10 @@ public class BallInfo : MonoBehaviour
         // also mark ball in grid
         gridPosScript.MarkBallInGrid(ballGridPos, myId, gameObject);
         // and pop balls if needed
-        gridPosScript.CheckAndPopBalls(myId, ballGridPos);
+        var nPoppedBalls = gridPosScript.CheckAndPopBalls(myId, ballGridPos);
+        if (nPoppedBalls > 0) {
+            gameManagerScript.AddBallsPopped(nPoppedBalls);
+        }
 
         // is field cleared, after (possibly) popping balls
         return gridPosScript.GetBallCountInGrid() == 0;

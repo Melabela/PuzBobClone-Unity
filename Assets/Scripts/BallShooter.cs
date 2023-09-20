@@ -14,6 +14,8 @@ public class BallShooter : MonoBehaviour
 
     [SerializeField] float BallShootForce = 14.0f;
 
+    GameManager gameManagerScript;
+
     // local state
     bool isHoldingBall;  // shooter has ball attached
     bool isBallShot;     // ball released, waiting
@@ -26,6 +28,8 @@ public class BallShooter : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        gameManagerScript = GameObject.Find("GameManager").GetComponent<GameManager>();
+
         // initial ball state
         // Update() will populate ball
         isHoldingBall = false;
@@ -181,6 +185,7 @@ public class BallShooter : MonoBehaviour
                 isBallShot = true;
                 ShootBall();
                 ballBeingHeld = null;
+                gameManagerScript.AddBallsPlayed(1);
                 return;
             }
         }
