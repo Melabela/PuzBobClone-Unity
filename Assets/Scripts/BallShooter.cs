@@ -12,7 +12,7 @@ public class BallShooter : MonoBehaviour
     [SerializeField] float Z_ROT_MIN = -82;
     [SerializeField] float Z_ROT_MAX = +82;
 
-    [SerializeField] float BallShootForce = 12.0f;
+    [SerializeField] float BallShootForce = 14.0f;
 
     // local state
     bool isHoldingBall;  // shooter has ball attached

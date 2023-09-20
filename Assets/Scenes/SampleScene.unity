@@ -2404,7 +2404,7 @@ MonoBehaviour:
   ROTATION_SPEED_MULT: 60
   Z_ROT_MIN: -82
   Z_ROT_MAX: 82
-  BallShootForce: 12
+  BallShootForce: 14
 --- !u!1 &1840497292
 GameObject:
   m_ObjectHideFlags: 0
