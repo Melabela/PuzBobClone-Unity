@@ -1,0 +1,29 @@
+<svg width="440" height="400" xmlns="http://www.w3.org/2000/svg">
+ <g stroke="#666" fill="none">
+  <title>Balls</title>
+  <ellipse ry="100" rx="100" id="svg_1" cy="287" cx="120"/>
+  <ellipse ry="100" rx="100" id="svg_2" cy="287" cx="320"/>
+  <ellipse ry="100" rx="100" id="svg_3" cy="113" cx="220"/>
+ </g>
+
+ <g stroke="#000" fill="none">
+  <title>Ball Centers</title>
+  <ellipse cx="120" cy="287" id="svg_4" rx="4" ry="4"/>
+  <ellipse cx="320" cy="287" id="svg_5" rx="4" ry="4"/>
+  <ellipse cx="220" cy="113" id="svg_6" rx="4" ry="4"/>
+ </g>
+ <g stroke-width="3" stroke="#000" fill="none">
+  <title>Triangle Lines</title>
+  <line x1="120" y1="287" x2="320" y2="287" id="svg_7"/>
+  <line x1="220" y1="112" x2="220" y2="287" id="svg_8"/>
+  <line x1="220" y1="113" x2="120" y2="287" id="svg_9"/>
+  <rect x="205" y="272" height="15" width="15" id="svg_10"/>
+ </g>
+ <g stroke-width="0" stroke="#000" fill="#000000" font-size="24" font-family="Noto Sans JP" text-anchor="start" xml:space="preserve">
+  <title>Text Labels</title>
+  <text x="145.5" y="182" id="svg_11">1.0</text>
+  <text x="260.5" y="312" id="svg_12">0.5</text>
+  <text x="160.5" y="312" id="svg_13">0.5</text>
+  <text x="228.5" y="197" id="svg_14" font-style="italic">y</text>
+ </g>
+</svg>

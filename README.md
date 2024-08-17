@@ -3,10 +3,10 @@
 A clone implementation based on "Puzzle Bobble" game, in Unity.
 Mainly built for personal understanding of mechanics involved in dealing with balls and hexagonal grid.
 
-### Features
+## Features
 
 - proper 'orange stacking' in (hexagonal) grid
-  - worked out positions with some basic trig, see `NOTES.txt`
+  - worked out positions with some basic trig, see [DESIGN_NOTES.md](DESIGN_NOTES.md)
   - when balls are played, snap them to exact positions in grid
 - add shooting guide, and if needed, guide for first reflection
 - detect and pop chain of 3-or-more balls of same color

@@ -1,0 +1,75 @@
+<svg width="650" height="520" xmlns="http://www.w3.org/2000/svg">
+ <g stroke-width="2" stroke="#000" fill="none">
+  <title>Axes</title>
+  <line x1="100" y1="450" x2="600" y2="450" id="svg_100"/>
+  <line x1="100" y1="50" x2="100" y2="450" id="svg_101"/>
+ </g> 
+ <g stroke-width="2" stroke="#000" fill="none">
+  <title>x-axis Notches</title>
+  <line x1="150" y1="440" x2="150" y2="460" id="svg_110"/>
+  <line x1="200" y1="440" x2="200" y2="460" id="svg_111"/>
+  <line x1="250" y1="440" x2="250" y2="460" id="svg_112"/>
+  <line x1="300" y1="440" x2="300" y2="460" id="svg_113"/>
+  <line x1="350" y1="440" x2="350" y2="460" id="svg_114"/>
+  <line x1="400" y1="440" x2="400" y2="460" id="svg_115"/>
+  <line x1="450" y1="440" x2="450" y2="460" id="svg_116"/>
+  <line x1="500" y1="440" x2="500" y2="460" id="svg_117"/>
+  <line x1="550" y1="440" x2="550" y2="460" id="svg_118"/>
+ </g> 
+ <g stroke-width="0" stroke="#000" fill="#000000" font-size="20" font-family="Noto Sans JP" text-anchor="center" xml:space="preserve">
+  <title>x-axis Text Labels</title>
+  <text id="svg_120" y="484" x="134">0.5</text>
+  <text id="svg_121" y="484" x="184">1.0</text>
+  <text id="svg_122" y="484" x="234">1.5</text>
+  <text id="svg_123" y="484" x="284">2.0</text>
+  <text id="svg_124" y="484" x="334">2.5</text>
+  <text id="svg_125" y="484" x="384">3.0</text>
+  <text id="svg_126" y="484" x="434">3.5</text>
+  <text id="svg_127" y="484" x="484">4.0</text>
+  <text id="svg_128" y="484" x="534">4.5</text>
+ </g>
+ <g stroke-width="2" stroke="#000" fill="none">
+  <title>y-axis Notches</title>
+  <line x1="90" y1="400.0" x2="110" y2="400.0" id="svg_130"/>
+  <line x1="90" y1="311.4" x2="110" y2="311.4" id="svg_131"/>
+  <line x1="90" y1="222.8" x2="110" y2="222.8" id="svg_132"/>
+  <line x1="90" y1="134.2" x2="110" y2="134.2" id="svg_133"/>
+ </g> 
+ <g stroke-width="0" stroke="#062" fill="#000000" font-size="20" font-family="Noto Sans JP" text-anchor="center" xml:space="preserve">
+  <title>y-axis Text Labels</title>
+  <text id="svg_140" y="405.0" x="60">0.5</text>
+  <text id="svg_141" y="316.4" x="40">1.366</text>
+  <text id="svg_142" y="227.8" x="40">2.232</text>
+  <text id="svg_143" y="139.2" x="40">3.098</text>
+ </g>
+ <g stroke="#666" fill="none">
+  <title>Balls - row 0</title>
+  <ellipse ry="50" rx="50" id="svg_1" cy="400" cx="150"/>
+  <ellipse ry="50" rx="50" id="svg_3" cy="400" cx="250"/>
+  <ellipse ry="50" rx="50" id="svg_5" cy="400" cx="350"/>
+  <ellipse ry="50" rx="50" id="svg_7" cy="400" cx="450"/>
+  <ellipse ry="50" rx="50" id="svg_9" cy="400" cx="550"/>
+ </g>
+ <g stroke="#666" fill="none">
+  <title>Balls - row 1</title>
+  <ellipse ry="50" rx="50" id="svg_12" cy="311.4" cx="200"/>
+  <ellipse ry="50" rx="50" id="svg_14" cy="311.4" cx="300"/>
+  <ellipse ry="50" rx="50" id="svg_16" cy="311.4" cx="400"/>
+  <ellipse ry="50" rx="50" id="svg_18" cy="311.4" cx="500"/>
+ </g>
+ <g stroke="#666" fill="none">
+  <title>Balls - row 2</title>
+  <ellipse ry="50" rx="50" id="svg_21" cy="222.8" cx="150"/>
+  <ellipse ry="50" rx="50" id="svg_23" cy="222.8" cx="250"/>
+  <ellipse ry="50" rx="50" id="svg_25" cy="222.8" cx="350"/>
+  <ellipse ry="50" rx="50" id="svg_27" cy="222.8" cx="450"/>
+  <ellipse ry="50" rx="50" id="svg_29" cy="222.8" cx="550"/>
+ </g>
+ <g stroke="#666" fill="none">
+  <title>Balls - row 3</title>
+  <ellipse ry="50" rx="50" id="svg_32" cy="134.2" cx="200"/>
+  <ellipse ry="50" rx="50" id="svg_34" cy="134.2" cx="300"/>
+  <ellipse ry="50" rx="50" id="svg_36" cy="134.2" cx="400"/>
+  <ellipse ry="50" rx="50" id="svg_38" cy="134.2" cx="500"/>
+ </g>
+</svg>
